@@ -45,9 +45,9 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
               onTap: () {
                 userId.isEmpty
                     ? showLoginBottomSheet(
-                      context,
-                      message: "Please login to access your cart",
-                    )
+                        context,
+                        message: "Please login to access your cart",
+                      )
                     : Navigator.pushNamed(context, AppRoutes.cartView);
               },
               child: Padding(
@@ -71,7 +71,6 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
               ),
             ),
           ],
-          actionsPadding: EdgeInsets.only(right: 20.w),
           backgroundColor: colorScheme.onPrimary,
           surfaceTintColor: colorScheme.onPrimary,
         ),
@@ -155,43 +154,39 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12.r),
-                            child:
-                                itemDetails.img.isNotEmpty
-                                    ? CachedNetworkImage(
-                                      imageUrl: itemDetails.img,
-                                      fit: BoxFit.cover,
-                                      placeholder:
-                                          (context, url) => Center(
-                                            child: SizedBox(
-                                              width: 25.w,
-                                              height: 25.h,
-                                              child:
-                                                  const CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                  ),
-                                            ),
-                                          ),
-                                      errorWidget:
-                                          (context, url, error) => Container(
-                                            color: Colors.grey.shade300,
-                                            child: Icon(
-                                              Icons.broken_image,
-                                              color: Colors.grey.shade600,
-                                              size: 40.sp,
-                                            ),
-                                          ),
-                                    )
-                                    : Container(
-                                      color: Colors.grey.shade200,
+                            child: itemDetails.img.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: itemDetails.img,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Center(
+                                      child: SizedBox(
+                                        width: 25.w,
+                                        height: 25.h,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Container(
+                                      color: Colors.grey.shade300,
                                       child: Icon(
-                                        Icons.image_not_supported,
-                                        color: Colors.grey.shade500,
+                                        Icons.broken_image,
+                                        color: Colors.grey.shade600,
                                         size: 40.sp,
                                       ),
                                     ),
+                                  )
+                                : Container(
+                                    color: Colors.grey.shade200,
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey.shade500,
+                                      size: 40.sp,
+                                    ),
+                                  ),
                           ),
                         ),
-
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 18.w),
                           child: Column(
@@ -373,11 +368,10 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                         spreadRadius: 1,
                       ),
                     ],
-                    borderRadius:
-                        BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
-                        ).r,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ).r,
                   ),
                   child: Row(
                     children: [
