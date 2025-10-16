@@ -10,15 +10,15 @@ class UpdateAddressModel {
   int statusCode;
   bool success;
   String message;
-  UpdatedData? data;
+  UpdatedData data;
   dynamic meta;
 
   UpdateAddressModel({
     required this.statusCode,
     required this.success,
     required this.message,
-    this.data,
-    this.meta,
+    required this.data,
+    required this.meta,
   });
 
   factory UpdateAddressModel.fromJson(Map<String, dynamic> json) =>
@@ -26,20 +26,25 @@ class UpdateAddressModel {
         statusCode: json["statusCode"] ?? 0,
         success: json["success"] ?? false,
         message: json["message"] ?? "",
-        data: json["data"] != null ? UpdatedData.fromJson(json["data"]) : null,
-        meta: json["meta"],
+        data:
+            json["data"] != null
+                ? UpdatedData.fromJson(json["data"])
+                : UpdatedData.empty(),
+        meta: json["meta"] ?? {},
       );
 
   Map<String, dynamic> toJson() => {
     "statusCode": statusCode,
     "success": success,
     "message": message,
-    "data": data?.toJson(),
+    "data": data.toJson(),
     "meta": meta,
   };
 }
 
 class UpdatedData {
+  String name;
+  String phone;
   String houseNo;
   String street;
   String city;
@@ -52,6 +57,8 @@ class UpdatedData {
   String id;
 
   UpdatedData({
+    required this.name,
+    required this.phone,
     required this.houseNo,
     required this.street,
     required this.city,
@@ -65,6 +72,8 @@ class UpdatedData {
   });
 
   factory UpdatedData.fromJson(Map<String, dynamic> json) => UpdatedData(
+    name: json["name"] ?? "",
+    phone: json["phone"] ?? "",
     houseNo: json["houseNo"] ?? "",
     street: json["street"] ?? "",
     city: json["city"] ?? "",
@@ -77,7 +86,24 @@ class UpdatedData {
     id: json["_id"] ?? "",
   );
 
+  factory UpdatedData.empty() => UpdatedData(
+    name: "",
+    phone: "",
+    houseNo: "",
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
+    type: "",
+    latitude: 0,
+    longitude: 0,
+    isSelected: false,
+    id: "",
+  );
+
   Map<String, dynamic> toJson() => {
+    "name": name,
+    "phone": phone,
     "houseNo": houseNo,
     "street": street,
     "city": city,

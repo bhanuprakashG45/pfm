@@ -27,7 +27,7 @@ class _FaqsScreenState extends State<FaqsScreen> {
     FaqItem(
       question: 'What are your delivery hours?',
       answer:
-          'We deliver between 7 AM and 10 PM. You can choose your preferred time slot at checkout.',
+          'We deliver between 10 AM and 9 PM. You can choose your preferred time slot at checkout.',
     ),
     FaqItem(
       question: 'Is there a return policy?',

@@ -53,7 +53,6 @@ class ContactUsPage extends StatelessWidget {
                 ),
                 SizedBox(height: 40.h),
 
-                // 📞 Call Us Button
                 SizedBox(
                   width: double.infinity,
                   height: 48.h,
@@ -66,7 +65,7 @@ class ContactUsPage extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      _launchDialer("1234567890"); // replace with real number
+                      _launchDialer("9686068687"); 
                     },
                     child: Text(
                       "Call Us",
@@ -80,7 +79,6 @@ class ContactUsPage extends StatelessWidget {
                 ),
                 SizedBox(height: 16.h),
 
-                // 📧 Drop Us a Line Button
                 SizedBox(
                   width: double.infinity,
                   height: 48.h,
@@ -94,8 +92,8 @@ class ContactUsPage extends StatelessWidget {
                     ),
                     onPressed: () {
                       _launchEmail(
-                        "support@example.com",
-                      ); // replace with real email
+                        "priyafreshmeats@gmail.com",
+                      ); 
                     },
                     child: Text(
                       "Drop Us a Line",

@@ -102,6 +102,7 @@ class LogoutDialog extends StatelessWidget {
                           await _pref.clearAccessToken();
                           await _pref.clearRefreshToken();
                           provider.clearCartCount();
+                          provider.notifiedItemIds.clear();
                           if (context.mounted) {
                             Navigator.of(context).pushNamedAndRemoveUntil(
                               AppRoutes.login,

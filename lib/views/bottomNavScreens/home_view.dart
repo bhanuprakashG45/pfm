@@ -1,3 +1,4 @@
+import 'package:priya_fresh_meats/res/components/location_loader.dart';
 import 'package:priya_fresh_meats/res/components/login_bottomsheet.dart';
 import 'package:priya_fresh_meats/res/components/rewards_card.dart';
 import 'package:priya_fresh_meats/utils/exports.dart';
@@ -210,12 +211,7 @@ class _HomeViewState extends State<HomeView> {
               child: Consumer<LocationProvider>(
                 builder: (context, locationProvider, _) {
                   return locationProvider.isCurrentLocationLoading
-                      ? Center(
-                        child: CircularProgressIndicator(
-                          color: colorScheme.primary,
-                          strokeWidth: 2.0.w,
-                        ),
-                      )
+                      ? LocationLoader()
                       : InkWell(
                         onTap: () {
                           userId.isEmpty
@@ -258,18 +254,31 @@ class _HomeViewState extends State<HomeView> {
                               ],
                             ),
                             SizedBox(height: 2.h),
-                            Text(
-                              locationProvider.fullAddress,
-                              style: GoogleFonts.roboto(
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w400,
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 0.6,
+                            locationProvider.userFloor == null
+                                ? Text(
+                                  locationProvider.fullAddress,
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.6,
+                                    ),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                )
+                                : Text(
+                                  "${locationProvider.userFloor},${locationProvider.fullAddress}",
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.6,
+                                    ),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
                           ],
                         ),
                       );
@@ -481,8 +490,17 @@ class _HomeViewState extends State<HomeView> {
                                                 itemId: item.id,
                                                 initialCount: item.count,
                                                 onChanged: (count) async {
-                                                  await homeprovider
-                                                      .fetchCartCount();
+                                                  if (userId.isEmpty) {
+                                                    showLoginBottomSheet(
+                                                      context,
+                                                      message:
+                                                          "Please login to add items to cart",
+                                                    );
+                                                    return;
+                                                  } else {
+                                                    await homeprovider
+                                                        .fetchCartCount();
+                                                  }
                                                 },
                                               ),
                                             ),

@@ -1,6 +1,7 @@
 import 'package:priya_fresh_meats/utils/exports.dart';
 import 'package:priya_fresh_meats/viewmodels/razorpay_vm/razorpay_viewmodel.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CartView extends StatefulWidget {
   const CartView({super.key});
@@ -15,6 +16,12 @@ class _CartViewState extends State<CartView> {
 
   Razorpay _razorpay = Razorpay();
 
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _houseFloorController = TextEditingController();
+
+  String _selectedDeliveryType = "Self";
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +35,8 @@ class _CartViewState extends State<CartView> {
       await cartprovider.fetchCartItems();
       await cartprovider.fetchAllCoupons();
       await cartprovider.fetchWallet();
+      await _pref.clearWalletAmount();
+      await _pref.clearCouponId();
     });
   }
 
@@ -35,8 +44,32 @@ class _CartViewState extends State<CartView> {
     final provider = Provider.of<RazorpayViewmodel>(context, listen: false);
     final profilevm = Provider.of<ProfileViewModel>(context, listen: false);
     final cartvm = Provider.of<CartProvider>(context, listen: false);
+    final locationprovider = Provider.of<LocationProvider>(
+      context,
+      listen: false,
+    );
 
     cartvm.totalAmount < 500 ? cartvm.setSwitchwallet(false) : null;
+    debugPrint(
+      "${_nameController.text}${_mobileController.text}${_houseFloorController.text}",
+    );
+    if (_nameController.text.isEmpty ||
+        _mobileController.text.isEmpty ||
+        _houseFloorController.text.isEmpty) {
+      customErrorToast(context, "Please fill Delivery details");
+      return;
+    }
+    if (_mobileController.text.length < 10) {
+      customErrorToast(context, "Please enter valid mobile number");
+      return;
+    }
+
+    await locationprovider.storeUserDetails(
+      _houseFloorController.text,
+      _houseFloorController.text,
+      _mobileController.text,
+    );
+
     await provider.initpayment(price);
     orderId = provider.razorpayOrderId;
 
@@ -66,6 +99,7 @@ class _CartViewState extends State<CartView> {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    final SharedPreferences _prefs = await SharedPreferences.getInstance();
     debugPrint('OrderId:${response.orderId}');
     debugPrint("PaymentId:${response.paymentId}");
     debugPrint("Signature:${response.signature}");
@@ -75,28 +109,43 @@ class _CartViewState extends State<CartView> {
       context,
       listen: false,
     );
-    await razorpayprovider.verifyPayment(
-      context: context,
-      razorpayOrderId: razorpayprovider.razorpayOrderId ?? "",
-      razorpayPaymentId: response.paymentId ?? "",
-      razorpaySignature: response.signature ?? "",
-      onSucess: () async {
-        final SharedPref _pref = SharedPref();
-        String couponId = await _pref.getCouponId();
-        int walletAmount = await _pref.getWalletAmount();
-        final cartprovider = Provider.of<CartProvider>(context, listen: false);
-        final homescreenprovider = Provider.of<HomeViewmodel>(
-          context,
-          listen: false,
-        );
+    await _prefs.setBool("pending_order", true);
+    debugPrint("Pending order set to true: ${_prefs.getBool("pending_order")}");
+    try {
+      await razorpayprovider.verifyPayment(
+        context: context,
+        razorpayOrderId: razorpayprovider.razorpayOrderId ?? "",
+        razorpayPaymentId: response.paymentId ?? "",
+        razorpaySignature: response.signature ?? "",
+        onSucess: () async {
+          final SharedPref _pref = SharedPref();
 
-        await cartprovider.placeOrder(couponId, walletAmount);
-        cartprovider.cartItemsData.clear();
-        homescreenprovider.clearCartCount();
-        Navigator.pushReplacementNamed(context, AppRoutes.activeOrders);
-        await homescreenprovider.fetchBestSellers();
-      },
-    );
+          String couponId = await _pref.getCouponId();
+          int walletAmount = await _pref.getWalletAmount();
+
+          final cartprovider = Provider.of<CartProvider>(
+            context,
+            listen: false,
+          );
+          final homescreenprovider = Provider.of<HomeViewmodel>(
+            context,
+            listen: false,
+          );
+
+          await cartprovider.placeOrder(context, couponId, walletAmount);
+          cartprovider.cartItemsData.clear();
+          homescreenprovider.clearCartCount();
+          Navigator.pushReplacementNamed(context, AppRoutes.activeOrders);
+          await homescreenprovider.fetchBestSellers();
+        },
+      );
+    } catch (e) {
+      debugPrint("Error in payment success handler: $e");
+      customErrorToast(
+        context,
+        "Something went wrong after payment!Call for support.",
+      );
+    }
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
@@ -142,52 +191,6 @@ class _CartViewState extends State<CartView> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (address.isNotEmpty)
-                            InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.addressBook,
-                                );
-                              },
-                              child: Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.all(10.r),
-                                margin: EdgeInsets.symmetric(
-                                  horizontal: 8.r,
-                                  vertical: 2.r,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(
-                                      Icons.location_on,
-                                      color: Colors.red,
-                                    ),
-                                    SizedBox(width: 8.w),
-                                    Expanded(
-                                      child: Text(
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        locationprovider.fullAddress,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
                           _buildBottomButton(
                             context,
                             theme,
@@ -371,6 +374,9 @@ class _CartViewState extends State<CartView> {
                                 colorScheme,
                                 cartProvider,
                               ),
+
+                              SizedBox(height: 20.h),
+                              _buildDeliverySection(colorScheme),
                             ],
                           );
                         }
@@ -378,6 +384,238 @@ class _CartViewState extends State<CartView> {
                         return SizedBox.shrink();
                       },
                     ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDeliverySection(ColorScheme colorScheme) {
+    return Consumer2<LocationProvider, ProfileViewModel>(
+      builder: (context, provider, profileprovider, _) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _nameController.text =
+              provider.userName != null
+                  ? provider.userName!
+                  : profileprovider.profiledata.name;
+          _mobileController.text =
+              provider.userPhone != null
+                  ? provider.userPhone!
+                  : profileprovider.profiledata.phone;
+          _houseFloorController.text = provider.userFloor ?? '';
+        });
+
+        return Container(
+          color: colorScheme.onPrimary,
+          padding: EdgeInsets.all(20.r),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Delivery Details',
+                    style: GoogleFonts.roboto(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 20.sp,
+                    ),
+                  ),
+                  SizedBox(width: 20.w),
+                  Expanded(child: Divider(endIndent: 30.w, thickness: 0.5)),
+                ],
+              ),
+              SizedBox(height: 15.h),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: RadioListTile<String>(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 1.w),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(
+                        "Self",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      value: "Self",
+                      groupValue: _selectedDeliveryType,
+                      activeColor: colorScheme.primary,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedDeliveryType = value!;
+                          provider.userType = value;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: RadioListTile<String>(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(
+                        "other",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      value: "other",
+                      groupValue: _selectedDeliveryType,
+                      activeColor: colorScheme.primary,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedDeliveryType = value!;
+                          provider.userType = value;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 16.h),
+              TextField(
+                controller: _nameController,
+                onChanged: (value) {
+                  provider.userName = value;
+                },
+                decoration: InputDecoration(
+                  labelText: "Reciever Name *",
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: colorScheme.primary),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 10.h,
+                    horizontal: 12.w,
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+
+              TextField(
+                controller: _mobileController,
+                onChanged: (value) {
+                  provider.userPhone = value;
+                },
+                keyboardType: TextInputType.phone,
+                maxLength: 10,
+                decoration: InputDecoration(
+                  counterText: "",
+                  labelText: "Reciever Mobile Number *",
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: colorScheme.primary),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 10.h,
+                    horizontal: 12.w,
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              TextField(
+                controller: _houseFloorController,
+                onChanged: (value) {
+                  provider.userFloor = value;
+                },
+                decoration: InputDecoration(
+                  labelText: "House No. / Floor *",
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: colorScheme.primary),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 10.h,
+                    horizontal: 12.w,
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 12.h),
+
+              if (address.isNotEmpty)
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    vertical: 10.h,
+                    horizontal: 5.w,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: Colors.black12),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(Icons.location_on, color: colorScheme.primary),
+                      SizedBox(width: 2.w),
+                      Expanded(
+                        child: Text(
+                          provider.fullAddress,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, AppRoutes.addressBook);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 6.h,
+                            horizontal: 6.w,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            "Change",
+                            style: GoogleFonts.roboto(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
         );
       },

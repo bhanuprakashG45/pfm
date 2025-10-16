@@ -1,3 +1,4 @@
+import 'package:priya_fresh_meats/res/components/login_bottomsheet.dart';
 import 'package:priya_fresh_meats/utils/exports.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -18,10 +19,13 @@ class _SearchScreenState extends State<SearchScreen> {
     'Prawns',
   ];
 
+  String? userId;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((value) async {
+      _loadUserId();
       final searchscreenprovider = Provider.of<SearchViewmodel>(
         context,
         listen: false,
@@ -34,6 +38,16 @@ class _SearchScreenState extends State<SearchScreen> {
       await searchscreenprovider.fetchSearchShopByCategory();
       await searchscreenprovider.fetchAllSearchData();
       await homescreenprovider.fetchCartCount();
+    });
+  }
+
+  void _loadUserId() async {
+    final pref = SharedPref();
+    final id = await pref.getUserId();
+
+    setState(() {
+      userId = id.isNotEmpty ? id : null;
+      debugPrint('Loaded userId: $userId');
     });
   }
 
@@ -85,8 +99,8 @@ class _SearchScreenState extends State<SearchScreen> {
           SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 200.h),
-              child: Consumer<SearchViewmodel>(
-                builder: (context, provider, _) {
+              child: Consumer2<SearchViewmodel, HomeViewmodel>(
+                builder: (context, provider, homeProvider, _) {
                   final isSearching = provider.searchText.isNotEmpty;
 
                   return Column(
@@ -160,6 +174,11 @@ class _SearchScreenState extends State<SearchScreen> {
                         Builder(
                           builder: (context) {
                             final results = provider.filteredSearchData;
+                            homeProvider.notifiedItemIds.addAll(
+                              results
+                                  .where((item) => item.notify)
+                                  .map((item) => item.id),
+                            );
 
                             if (results.isEmpty) {
                               return Center(
@@ -182,6 +201,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               itemCount: results.length,
                               itemBuilder: (context, index) {
                                 final item = results[index];
+
                                 return _buildSearchItem(item);
                               },
                             );
@@ -237,7 +257,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         children: [
                           Text(
                             item.name,
-                            maxLines: 2,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.roboto(
                               fontWeight: FontWeight.w500,
@@ -430,7 +450,24 @@ class _SearchScreenState extends State<SearchScreen> {
                           if (!item.available) {
                             return ElevatedButton(
                               onPressed: () async {
-                                await homeProvider.notifyMe(item.id);
+                                if (userId == null) {
+                                  showLoginBottomSheet(
+                                    context,
+                                    message: "Please login for Access Notify.",
+                                  );
+                                  return;
+                                } else {
+                                  homeProvider.notifiedItemIds.contains(item.id)
+                                      ? null
+                                      : {
+                                        await homeProvider.notifyMe(item.id),
+
+                                        customSuccessToast(
+                                          context,
+                                          "Added to Notify List",
+                                        ),
+                                      };
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colorScheme.onPrimary,
@@ -454,23 +491,29 @@ class _SearchScreenState extends State<SearchScreen> {
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            item.notify ? "Notified" : "Notify",
+                                            homeProvider.notifiedItemIds
+                                                    .contains(item.id)
+                                                ? "Notified"
+                                                : "Notify",
                                             style: GoogleFonts.roboto(
                                               fontSize: 16.sp,
                                               fontWeight: FontWeight.w600,
                                               color:
-                                                  item.notify
+                                                  homeProvider.notifiedItemIds
+                                                          .contains(item.id)
                                                       ? Colors.green
                                                       : colorScheme.primary,
                                             ),
                                           ),
                                           SizedBox(width: 5.w),
                                           Icon(
-                                            item.notify
+                                            homeProvider.notifiedItemIds
+                                                    .contains(item.id)
                                                 ? Icons.check_circle
                                                 : Icons.notifications_active,
                                             color:
-                                                item.notify
+                                                homeProvider.notifiedItemIds
+                                                        .contains(item.id)
                                                     ? Colors.green
                                                     : colorScheme.primary,
                                           ),
@@ -482,7 +525,16 @@ class _SearchScreenState extends State<SearchScreen> {
                               itemId: item.id,
                               initialCount: 0,
                               onChanged: (count) async {
-                                await homeProvider.fetchCartCount();
+                                if (userId == null) {
+                                  showLoginBottomSheet(
+                                    context,
+                                    message:
+                                        "Please login for Adding Items to Cart.",
+                                  );
+                                  return;
+                                } else {
+                                  await homeProvider.fetchCartCount();
+                                }
                               },
                             );
                           }
@@ -491,7 +543,6 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ],
                 ),
-              
               ],
             ),
           ),

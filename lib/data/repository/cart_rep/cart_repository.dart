@@ -49,8 +49,11 @@ class CartRepository {
   }
 
   Future<PlaceOrderModel> placeOrder(
+    String userType,
+    String userName,
+    String userPhone,
+    String userFloor,
     String location,
-    String phone,
     String notes,
     double lat,
     double long,
@@ -60,8 +63,11 @@ class CartRepository {
   ) async {
     try {
       final Map<String, dynamic> payload = {
+        "houseNo": userFloor,
+        "deleveyFor": userType,
+        "recieverName": userName,
         "location": location,
-        "phone": phone,
+        "phone": userPhone,
         "notes": 'Deliver with Care',
         "latitude": lat,
         "longitude": long,

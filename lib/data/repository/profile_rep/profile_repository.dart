@@ -110,6 +110,8 @@ class ProfileRepository {
   }
 
   Future<NewAddressModel> addNewAddress(
+    String name,
+    String phone,
     String houseNo,
     String streetName,
     String city,
@@ -125,6 +127,8 @@ class ProfileRepository {
       final url = "${AppUrls.addAddressUrl}/$userId";
       debugPrint(url);
       final data = {
+        "name": name,
+        "phone": phone,
         "houseNo": houseNo,
         "street": streetName,
         "city": city,
@@ -148,6 +152,8 @@ class ProfileRepository {
 
   Future<UpdateAddressModel> updateAddress(
     String id,
+    String name,
+    String phone,
     String houseNo,
     String streetName,
     String city,
@@ -163,6 +169,8 @@ class ProfileRepository {
       final url = "${AppUrls.updateAddressUrl}/$userId/$id";
       debugPrint(url);
       final data = {
+        "name": name,
+        "phone": phone,
         "houseNo": houseNo,
         "street": streetName,
         "city": city,

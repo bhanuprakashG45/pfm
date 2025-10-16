@@ -51,7 +51,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                     : Navigator.pushNamed(context, AppRoutes.cartView);
               },
               child: Padding(
-                padding: EdgeInsets.only(top: 10.0.h),
+                padding: EdgeInsets.only(top: 10.0.h, right: 10.w),
                 child: Column(
                   children: [
                     Icon(
@@ -110,20 +110,6 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                       ),
                     ),
                     SizedBox(height: 24.h),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Future.microtask(() {
-                        //   if (mounted) {
-                        //     provider.retryFetchItemDetails(widget.itemId);
-                        //   }
-                        // });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: colorScheme.onPrimary,
-                      ),
-                      child: Text('Retry'),
-                    ),
                   ],
                 ),
               );
@@ -313,7 +299,6 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                 ),
                               ),
                               SizedBox(height: 10.h),
-                              // Description
                               Text(
                                 itemDetails.description,
                                 style: GoogleFonts.roboto(
@@ -375,7 +360,6 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                   ),
                   child: Row(
                     children: [
-                      // Price Section
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 15.w,

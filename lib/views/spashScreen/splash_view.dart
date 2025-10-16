@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:priya_fresh_meats/utils/exports.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -29,6 +30,28 @@ class _SplashViewState extends State<SplashView> with TickerProviderStateMixin {
 
     Timer(const Duration(seconds: 3), () async {
       final token = await _pref.getAccessToken();
+      final SharedPreferences _prefs = await SharedPreferences.getInstance();
+      bool hasPendingOrder = _prefs.getBool("pending_order") ?? false;
+
+      debugPrint("Has pending order: $hasPendingOrder");
+      if (hasPendingOrder) {
+        Future.delayed(Duration(seconds: 2), () async {
+          String couponId = await _pref.getCouponId();
+          int walletAmount = await _pref.getWalletAmount();
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            final cartprovider = Provider.of<CartProvider>(
+              context,
+              listen: false,
+            );
+            try {
+              await cartprovider.placeOrder(context, couponId, walletAmount);
+            } catch (e) {
+              debugPrint("Retry order failed: $e");
+            }
+          }
+        });
+      }
       debugPrint(token);
       if (token == '') {
         Navigator.pushReplacementNamed(context, AppRoutes.welcome);

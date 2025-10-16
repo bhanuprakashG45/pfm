@@ -27,71 +27,16 @@ class ItemDetailsProvider with ChangeNotifier {
       _itemDetails = itemDetails;
     } catch (e) {
       _errorMessage = 'Failed to load item details: $e';
-      debugPrint('❌ Error in fetchItemDetails: $e');
+      debugPrint(' Error in fetchItemDetails: $e');
 
       _itemDetails = null;
-      print('🚨 Setting error message: $_errorMessage');
+      print(' Setting error message: $_errorMessage');
     } finally {
       _isLoading = false;
       print(
-        '🏁 Finished fetching item details. Loading: $_isLoading, Error: $_errorMessage',
+        ' Finished fetching item details. Loading: $_isLoading, Error: $_errorMessage',
       );
       notifyListeners();
     }
   }
-
-  // void updateQuantity(int newQuantity) {
-  //   if (newQuantity >= 0) {
-  //     _quantity = newQuantity;
-  //     notifyListeners();
-  //     print('📊 Updated quantity: $newQuantity');
-  //   }
-  // }
-
-  // void incrementQuantity() {
-  //   _quantity++;
-  //   notifyListeners();
-  //   print('➕ Incremented quantity: $_quantity');
-  // }
-
-  // void decrementQuantity() {
-  //   if (_quantity > 0) {
-  //     _quantity--;
-  //     notifyListeners();
-  //     print('➖ Decremented quantity: $_quantity');
-  //   }
-  // }
-
-  // void addToCart() {
-  //   if (_quantity == 0) {
-  //     _quantity = 1;
-  //     notifyListeners();
-  //     print('🛒 Added item to cart with quantity: $_quantity');
-  //   }
-  // }
-
-  // void clearError() {
-  //   print('🧹 Clearing error message');
-  //   _errorMessage = '';
-  //   notifyListeners();
-  // }
-
-  // Future<void> retryFetchItemDetails(String itemId) async {
-  //   print('🔄 Retrying to fetch item details for ID: $itemId');
-  //   clearError();
-  //   await fetchItemDetails(itemId);
-  // }
-
-  // void resetQuantity() {
-  //   _quantity = 0;
-  //   notifyListeners();
-  // }
-
-  // void clearData() {
-  //   _itemDetails = null;
-  //   _quantity = 0;
-  //   _errorMessage = '';
-  //   _isLoading = false;
-  //   notifyListeners();
-  // }
 }

@@ -2,6 +2,7 @@ import 'package:priya_fresh_meats/data/models/cart/cart_items_model.dart';
 import 'package:priya_fresh_meats/data/models/cart/wallet_model.dart';
 import 'package:priya_fresh_meats/data/repository/cart_rep/cart_repository.dart';
 import 'package:priya_fresh_meats/utils/exports.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CartProvider with ChangeNotifier {
   final CartRepository _repository = CartRepository();
@@ -134,8 +135,26 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> placeOrder(String couponId, int wallet) async {
+  Future<void> placeOrder(
+    BuildContext context,
+    String couponId,
+    int wallet,
+  ) async {
     isOrderPlacing = true;
+    final SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final locationprovider = Provider.of<LocationProvider>(
+      context,
+      listen: false,
+    );
+    final userType = locationprovider.userType ?? "self";
+    final userName = locationprovider.userName ?? "";
+    final userPhone = locationprovider.userPhone ?? "";
+    final userFloor = locationprovider.userFloor ?? "";
+
+    debugPrint("User Type: $userType");
+    debugPrint("User Name: $userName");
+    debugPrint("User Phone: $userPhone");
+    await _prefs.setBool("pending_order", true);
     try {
       final userData = await _pref.getUserDetails();
 
@@ -156,8 +175,11 @@ class CartProvider with ChangeNotifier {
       debugPrint("Pincode: $pincode");
       debugPrint("Wallet Points: $walletPoint");
       final result = await _repository.placeOrder(
+        userType,
+        userName,
+        userPhone,
+        userFloor,
         location,
-        phone,
         notes,
         lat,
         long,
@@ -174,6 +196,7 @@ class CartProvider with ChangeNotifier {
         _orderId = result.data.order;
         debugPrint("Order ID: $_orderId");
         debugPrint("Order placed successfully");
+        await _prefs.setBool("pending_order", false);
         notifyListeners();
       } else {
         debugPrint("Failed to place order: ${result.message}");

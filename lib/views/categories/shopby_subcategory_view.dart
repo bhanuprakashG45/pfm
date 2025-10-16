@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:priya_fresh_meats/res/components/login_bottomsheet.dart';
 import 'package:priya_fresh_meats/utils/exports.dart';
 
 class ShopbySubcategoryView extends StatefulWidget {
@@ -17,14 +18,26 @@ class ShopbySubcategoryView extends StatefulWidget {
 }
 
 class _ShopbySubcategoryViewState extends State<ShopbySubcategoryView> {
+  String? userId;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((value) async {
+      _loadUserId();
       await Provider.of<ShopbycategoryViewmodel>(
         context,
         listen: false,
       ).fetchSubCategory(widget.itemId);
+    });
+  }
+
+  void _loadUserId() async {
+    final pref = SharedPref();
+    final id = await pref.getUserId();
+
+    setState(() {
+      userId = id.isNotEmpty ? id : null;
+      debugPrint('Loaded userId: $userId');
     });
   }
 
@@ -47,8 +60,8 @@ class _ShopbySubcategoryViewState extends State<ShopbySubcategoryView> {
         elevation: 0.1,
       ),
       backgroundColor: colorScheme.onPrimary,
-      body: Consumer<ShopbycategoryViewmodel>(
-        builder: (context, provider, child) {
+      body: Consumer2<ShopbycategoryViewmodel, HomeViewmodel>(
+        builder: (context, provider, homeprovider, child) {
           if (provider.isShopBySubCategoryLoading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -72,7 +85,11 @@ class _ShopbySubcategoryViewState extends State<ShopbySubcategoryView> {
 
                     final item = provider.subcategoryData[index];
                     final isAvailable = item.available;
-                    final isNotify = item.notify;
+                    item.notify
+                        ? homeprovider.notifiedItemIds.add(item.id)
+                        : null;
+
+                    final initialcount = 0;
 
                     return Container(
                       margin: EdgeInsets.only(bottom: 15.h),
@@ -81,7 +98,7 @@ class _ShopbySubcategoryViewState extends State<ShopbySubcategoryView> {
                         borderRadius: BorderRadius.circular(15.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
+                            color: Colors.grey.withValues(alpha: 0.2),
                             spreadRadius: 2,
                             blurRadius: 5,
                             offset: const Offset(0, 3),
@@ -187,196 +204,213 @@ class _ShopbySubcategoryViewState extends State<ShopbySubcategoryView> {
                             ),
                           ),
 
-                          Consumer<HomeViewmodel>(
-                            builder: (context, homeprovider, child) {
-                              final initialcount = 0;
-                              return Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 10.w,
-                                  vertical: 15.h,
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.w,
+                              vertical: 15.h,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.name,
+                                  style: GoogleFonts.roboto(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20.sp,
+                                    color: Colors.black,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                Text(
+                                  item.description,
+                                  style: GoogleFonts.roboto(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14.sp,
+                                    color: AppColor.secondaryBlack,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                ),
+                                SizedBox(height: 5.h),
+                                Text(
+                                  '${item.weight} | ${item.pieces} pcs • Serves ${item.serves}',
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                SizedBox(height: 10.h),
+                                Row(
                                   children: [
-                                    Text(
-                                      item.name,
-                                      style: GoogleFonts.roboto(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 20.sp,
-                                        color: Colors.black,
+                                    Container(
+                                      height: 15.h,
+                                      width: 15.w,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.shade300,
+                                        borderRadius: BorderRadius.circular(
+                                          50.r,
+                                        ),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                    ),
-                                    Text(
-                                      item.description,
-                                      style: GoogleFonts.roboto(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14.sp,
-                                        color: AppColor.secondaryBlack,
+                                      child: FaIcon(
+                                        FontAwesomeIcons.bolt,
+                                        color: Colors.white,
+                                        size: 10.sp,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
                                     ),
-                                    SizedBox(height: 5.h),
+                                    SizedBox(width: 5.w),
                                     Text(
-                                      '${item.weight} | ${item.pieces} pcs • Serves ${item.serves}',
+                                      'Today in 120 mins',
                                       style: GoogleFonts.roboto(
                                         fontSize: 15.sp,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.grey[700],
+                                        color: AppColor.secondaryBlack,
                                       ),
-                                    ),
-                                    SizedBox(height: 10.h),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          height: 15.h,
-                                          width: 15.w,
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            color: Colors.orange.shade300,
-                                            borderRadius: BorderRadius.circular(
-                                              50.r,
-                                            ),
-                                          ),
-                                          child: FaIcon(
-                                            FontAwesomeIcons.bolt,
-                                            color: Colors.white,
-                                            size: 10.sp,
-                                          ),
-                                        ),
-                                        SizedBox(width: 5.w),
-                                        Text(
-                                          'Today in 120 mins',
-                                          style: GoogleFonts.roboto(
-                                            fontSize: 15.sp,
-                                            fontWeight: FontWeight.w500,
-                                            color: AppColor.secondaryBlack,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 5.h),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Container(
-                                          padding:
-                                              EdgeInsets.symmetric(
-                                                vertical: 5,
-                                                horizontal: 10,
-                                              ).r,
-                                          decoration: BoxDecoration(
-                                            color: Colors.green.shade50,
-
-                                            borderRadius:
-                                                BorderRadius.circular(5).r,
-                                          ),
-                                          child: Text(
-                                            "\u{20B9}${item.price}",
-                                            style: GoogleFonts.roboto(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 18.sp,
-                                              color: AppColor.greenGrad1,
-                                            ),
-                                          ),
-                                        ),
-
-                                        isAvailable
-                                            ? AddToCartButton(
-                                              itemId: item.id,
-                                              initialCount: initialcount,
-                                              onChanged: (count) async {
-                                                await homeprovider
-                                                    .fetchCartCount();
-                                              },
-                                            )
-                                            : ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    colorScheme.onPrimary,
-
-                                                shape: RoundedRectangleBorder(
-                                                  side: BorderSide(
-                                                    color: AppColor.dividergrey,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        8.r,
-                                                      ),
-                                                ),
-                                              ),
-                                              onPressed:
-                                                  isNotify
-                                                      ? null
-                                                      : () async {
-                                                        await homeprovider
-                                                            .notifyMe(item.id);
-                                                        await provider
-                                                            .fetchSubCategory(
-                                                              widget.itemId,
-                                                            );
-                                                      },
-                                              child:
-                                                  homeprovider.isNotifyMeLoading
-                                                      ? SizedBox(
-                                                        height: 10.h,
-                                                        width: 10.w,
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                              color:
-                                                                  colorScheme
-                                                                      .primary,
-                                                              strokeWidth:
-                                                                  2.0.w,
-                                                            ),
-                                                      )
-                                                      : Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: [
-                                                          Text(
-                                                            isNotify
-                                                                ? "Notify"
-                                                                : "Notify",
-                                                            style: GoogleFonts.roboto(
-                                                              fontSize: 16.sp,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color:
-                                                                  isNotify
-                                                                      ? Colors
-                                                                          .green
-                                                                      : colorScheme
-                                                                          .primary,
-                                                            ),
-                                                          ),
-                                                          SizedBox(width: 5.w),
-                                                          Icon(
-                                                            isNotify
-                                                                ? Icons
-                                                                    .check_circle
-                                                                : Icons
-                                                                    .notifications_active,
-                                                            color:
-                                                                isNotify
-                                                                    ? Colors
-                                                                        .green
-                                                                    : colorScheme
-                                                                        .primary,
-                                                          ),
-                                                        ],
-                                                      ),
-                                            ),
-                                      ],
                                     ),
                                   ],
                                 ),
-                              );
-                            },
+                                SizedBox(height: 5.h),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding:
+                                          EdgeInsets.symmetric(
+                                            vertical: 5,
+                                            horizontal: 10,
+                                          ).r,
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade50,
+
+                                        borderRadius:
+                                            BorderRadius.circular(5).r,
+                                      ),
+                                      child: Text(
+                                        "\u{20B9}${item.price}",
+                                        style: GoogleFonts.roboto(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 18.sp,
+                                          color: AppColor.greenGrad1,
+                                        ),
+                                      ),
+                                    ),
+
+                                    isAvailable
+                                        ? AddToCartButton(
+                                          itemId: item.id,
+                                          initialCount: initialcount,
+                                          onChanged: (count) async {
+                                            if (userId != null) {
+                                              await homeprovider
+                                                  .fetchCartCount();
+                                            }
+                                          },
+                                        )
+                                        : ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                colorScheme.onPrimary,
+
+                                            shape: RoundedRectangleBorder(
+                                              side: BorderSide(
+                                                color: AppColor.dividergrey,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(8.r),
+                                            ),
+                                          ),
+                                          onPressed: () async {
+                                            if (userId == null) {
+                                              showLoginBottomSheet(
+                                                context,
+                                                message:
+                                                    "Please login for Access Notify.",
+                                              );
+                                              return;
+                                            }
+
+                                            if (!homeprovider.notifiedItemIds
+                                                .contains(item.id)) {
+                                              await homeprovider.notifyMe(
+                                                item.id,
+                                              );
+                                              customSuccessToast(
+                                                context,
+                                                'Added to Notify List',
+                                              );
+                                            }
+                                          },
+
+                                          child:
+                                              homeprovider.isNotifyMeLoading
+                                                  ? SizedBox(
+                                                    height: 10.h,
+                                                    width: 10.w,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          color:
+                                                              colorScheme
+                                                                  .primary,
+                                                          strokeWidth: 2.0.w,
+                                                        ),
+                                                  )
+                                                  : Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                        homeprovider
+                                                                .notifiedItemIds
+                                                                .contains(
+                                                                  item.id,
+                                                                )
+                                                            ? "Notified"
+                                                            : "Notify",
+                                                        style: GoogleFonts.roboto(
+                                                          fontSize: 16.sp,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color:
+                                                              homeprovider
+                                                                      .notifiedItemIds
+                                                                      .contains(
+                                                                        item.id,
+                                                                      )
+                                                                  ? Colors.green
+                                                                  : colorScheme
+                                                                      .primary,
+                                                        ),
+                                                      ),
+                                                      SizedBox(width: 5.w),
+                                                      Icon(
+                                                        homeprovider
+                                                                .notifiedItemIds
+                                                                .contains(
+                                                                  item.id,
+                                                                )
+                                                            ? Icons.check_circle
+                                                            : Icons
+                                                                .notifications_active,
+                                                        color:
+                                                            homeprovider
+                                                                    .notifiedItemIds
+                                                                    .contains(
+                                                                      item.id,
+                                                                    )
+                                                                ? Colors.green
+                                                                : colorScheme
+                                                                    .primary,
+                                                      ),
+                                                    ],
+                                                  ),
+                                        ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

@@ -1,3 +1,4 @@
+import 'package:geocoding/geocoding.dart';
 import 'package:priya_fresh_meats/utils/exports.dart';
 
 class AddressBookView extends StatefulWidget {
@@ -16,7 +17,8 @@ class _AddressBookViewState extends State<AddressBookView> {
   final customAddressTypeController = TextEditingController();
   final searchController = TextEditingController();
   final addressTypeController = TextEditingController();
-
+  final nameController = TextEditingController();
+  final mobileController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -139,12 +141,15 @@ class _AddressBookViewState extends State<AddressBookView> {
 
   void _showAddAddressBottomSheet(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    nameController.clear();
+    mobileController.clear();
     houseController.clear();
     streetController.clear();
     cityController.clear();
     stateController.clear();
     postalCodeController.clear();
     addressTypeController.clear();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -157,8 +162,8 @@ class _AddressBookViewState extends State<AddressBookView> {
           top: false,
           right: false,
           left: false,
-          child: Consumer<ProfileViewModel>(
-            builder: (context, provider, child) {
+          child: Consumer2<ProfileViewModel, LocationProvider>(
+            builder: (context, provider, locationprovider, child) {
               return Padding(
                 padding: EdgeInsets.only(
                   top: 20.h,
@@ -192,14 +197,83 @@ class _AddressBookViewState extends State<AddressBookView> {
                               color: AppColor.primaryBlack,
                             ),
                           ),
+                          SizedBox(height: 16.h),
+
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12).r,
+                              ),
+                            ),
+                            onPressed: () async {
+                              final result =
+                                  await locationprovider
+                                      .fetchAndSaveCurrentLocation();
+                              if (result != null) {
+                                customErrorToast(context, result);
+                              } else {
+                                final place =
+                                    await Geolocator.getCurrentPosition();
+                                final placemarks =
+                                    await placemarkFromCoordinates(
+                                      place.latitude,
+                                      place.longitude,
+                                    );
+                                if (placemarks.isNotEmpty) {
+                                  final p = placemarks.first;
+                                  streetController.text =
+                                      '${p.name ?? ''} , ${p.subLocality ?? ''}';
+
+                                  cityController.text = p.locality ?? '';
+                                  stateController.text =
+                                      p.administrativeArea ?? '';
+                                  postalCodeController.text =
+                                      p.postalCode ?? '';
+                                }
+                              }
+                            },
+                            icon: Icon(
+                              Icons.my_location,
+                              color: colorScheme.onPrimary,
+                              size: 20.sp,
+                            ),
+                            label:
+                                locationprovider.isCurrentLocationLoading
+                                    ? TweenAnimationBuilder(
+                                      tween: IntTween(begin: 0, end: 3),
+                                      duration: const Duration(
+                                        milliseconds: 800,
+                                      ),
+                                      builder: (context, value, child) {
+                                        String dots = "." * value;
+                                        return Text(
+                                          "Fetching$dots",
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 16.sp,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        );
+                                      },
+                                      onEnd: () {},
+                                    )
+                                    : Text(
+                                      "Use Current Location",
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 16.sp,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                          ),
+
                           SizedBox(height: 20.h),
-                          DropdownButtonFormField<String>(
-                            value:
-                                addressTypeController.text.isNotEmpty
-                                    ? addressTypeController.text
-                                    : null,
+                          TextField(
+                            controller: nameController,
                             decoration: InputDecoration(
-                              labelText: 'Address Type',
+                              labelText: 'Full Name *',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -208,10 +282,41 @@ class _AddressBookViewState extends State<AddressBookView> {
                                 fontSize: 16.sp,
                                 color: colorScheme.onSurfaceVariant,
                               ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: colorScheme.error,
-                                ),
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          TextField(
+                            controller: mobileController,
+                            keyboardType: TextInputType.phone,
+                            maxLength: 10,
+                            decoration: InputDecoration(
+                              labelText: 'Mobile Number *',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              labelStyle: GoogleFonts.roboto(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16.sp,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+
+                          DropdownButtonFormField<String>(
+                            value:
+                                addressTypeController.text.isNotEmpty
+                                    ? addressTypeController.text
+                                    : null,
+                            decoration: InputDecoration(
+                              labelText: 'Address Type*',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              labelStyle: GoogleFonts.roboto(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16.sp,
+                                color: colorScheme.onSurfaceVariant,
                               ),
                             ),
                             items:
@@ -236,16 +341,6 @@ class _AddressBookViewState extends State<AddressBookView> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              labelStyle: GoogleFonts.roboto(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16.sp,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: colorScheme.error,
-                                ),
-                              ),
                             ),
                           ),
                           SizedBox(height: 12.h),
@@ -255,16 +350,6 @@ class _AddressBookViewState extends State<AddressBookView> {
                               labelText: 'Street / Area *',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                              ),
-                              labelStyle: GoogleFonts.roboto(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16.sp,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: colorScheme.error,
-                                ),
                               ),
                             ),
                           ),
@@ -276,16 +361,6 @@ class _AddressBookViewState extends State<AddressBookView> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              labelStyle: GoogleFonts.roboto(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16.sp,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: colorScheme.error,
-                                ),
-                              ),
                             ),
                           ),
                           SizedBox(height: 12.h),
@@ -296,60 +371,43 @@ class _AddressBookViewState extends State<AddressBookView> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              labelStyle: GoogleFonts.roboto(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16.sp,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: colorScheme.error,
-                                ),
-                              ),
                             ),
                           ),
                           SizedBox(height: 12.h),
                           TextField(
                             controller: postalCodeController,
+                            keyboardType: TextInputType.number,
                             decoration: InputDecoration(
                               labelText: 'Postal Code *',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              labelStyle: GoogleFonts.roboto(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16.sp,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: colorScheme.error,
-                                ),
-                              ),
                             ),
-                            keyboardType: TextInputType.number,
                           ),
                           SizedBox(height: 20.h),
+
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              padding: EdgeInsets.symmetric(vertical: 12.h),
                               backgroundColor: colorScheme.primary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12).r,
                               ),
-                              minimumSize: Size(double.infinity, 48.h),
+                              minimumSize: Size(double.infinity, 25.h),
                             ),
                             onPressed:
                                 provider.isNewAddressAdding
                                     ? null
                                     : () async {
-                                      if (houseController.text.isEmpty ||
+                                      if (nameController.text.isEmpty ||
+                                          mobileController.text.isEmpty ||
+                                          houseController.text.isEmpty ||
                                           streetController.text.isEmpty ||
                                           cityController.text.isEmpty ||
                                           stateController.text.isEmpty ||
                                           postalCodeController.text.isEmpty ||
                                           addressTypeController.text.isEmpty) {
-                                        if (mounted) {
+                                        if (context.mounted) {
                                           customErrorToast(
                                             context,
                                             'Please fill all required fields',
@@ -363,12 +421,15 @@ class _AddressBookViewState extends State<AddressBookView> {
                                             context,
                                             listen: false,
                                           );
+                                      final name = nameController.text;
+                                      final phone = mobileController.text;
                                       final type = addressTypeController.text;
                                       final houseNo = houseController.text;
                                       final streetname = streetController.text;
                                       final city = cityController.text;
                                       final state = stateController.text;
                                       final pincode = postalCodeController.text;
+
                                       final result = await locationprovider
                                           .getLatLngFromAddress(
                                             houseNo: houseNo,
@@ -393,6 +454,8 @@ class _AddressBookViewState extends State<AddressBookView> {
 
                                       if (result != null) {
                                         await provider.addNewAddress(
+                                          name,
+                                          phone,
                                           houseNo,
                                           streetname,
                                           city,
@@ -497,6 +560,7 @@ class _AddressBookViewState extends State<AddressBookView> {
                     onTap: () async {
                       final error =
                           await locationProvider.fetchAndSaveCurrentLocation();
+                      await locationProvider.clearUserDetails();
 
                       if (context.mounted) {
                         if (error != null) {
@@ -515,55 +579,64 @@ class _AddressBookViewState extends State<AddressBookView> {
                         Navigator.of(context).pop();
                       }
                     },
-                    child:
-                        locationProvider.isCurrentLocationLoading
-                            ? SizedBox(
-                              height: 20.h,
-                              width: 20.w,
-                              child: CircularProgressIndicator(
-                                color: colorScheme.primary,
-                              ),
-                            )
-                            : Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 10.h,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12.r),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 6,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                                border: Border.all(
-                                  color: AppColor.pastelBrown,
-                                  width: 0.5,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.my_location,
-                                    color: Colors.blue,
-                                    size: 20.sp,
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  Text(
-                                    "Use Current Location",
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 10.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(12.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: AppColor.pastelBrown,
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.my_location,
+                            color: colorScheme.onPrimary,
+                            size: 20.sp,
+                          ),
+                          SizedBox(width: 8.w),
+
+                          locationProvider.isCurrentLocationLoading
+                              ? TweenAnimationBuilder(
+                                tween: IntTween(begin: 0, end: 3),
+                                duration: const Duration(milliseconds: 800),
+                                builder: (context, value, child) {
+                                  String dots = "." * value;
+                                  return Text(
+                                    "Fetching$dots",
                                     style: GoogleFonts.roboto(
                                       fontSize: 16.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.blue,
+                                      color: colorScheme.onPrimary,
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                  ),
-                                ],
+                                  );
+                                },
+                                onEnd: () {},
+                              )
+                              : Text(
+                                "Use Current Location",
+                                style: GoogleFonts.roboto(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onPrimary,
+                                ),
                               ),
-                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
 
@@ -602,7 +675,12 @@ class _AddressBookViewState extends State<AddressBookView> {
                                 return InkWell(
                                   onTap: () async {
                                     final fullAddress =
-                                        "${address.houseNo}, ${address.street}, ${address.city}, ${address.state}, ${address.pincode}";
+                                        " ${address.street}, ${address.city}, ${address.state}, ${address.pincode}";
+                                    await locationProvider.storeUserDetails(
+                                      address.houseNo,
+                                      address.name,
+                                      address.phone,
+                                    );
 
                                     await locationProvider.saveLocation(
                                       address.street,
@@ -611,6 +689,7 @@ class _AddressBookViewState extends State<AddressBookView> {
                                       address.latitude,
                                       address.longitude,
                                     );
+                                    await locationProvider.loadUserDetails();
                                     Navigator.pop(context);
                                   },
                                   child: Container(
@@ -664,23 +743,94 @@ class _AddressBookViewState extends State<AddressBookView> {
                                             color: AppColor.greytext,
                                             thickness: 0.5,
                                           ),
-                                          Text(
-                                            '${address.houseNo}, ${address.street}',
-                                            style: GoogleFonts.roboto(
-                                              fontSize: 16.sp,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColor.secondaryBlack,
-                                            ),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.person,
+                                                size: 22.sp,
+                                                color: colorScheme.primary,
+                                              ),
+                                              SizedBox(width: 10.w),
+                                              Text(
+                                                address.name,
+                                                style: GoogleFonts.roboto(
+                                                  fontSize: 18.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color:
+                                                      AppColor.secondaryBlack,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                           SizedBox(height: 6.h),
-                                          Text(
-                                            '${address.city}, ${address.state} - ${address.pincode}',
-                                            style: GoogleFonts.roboto(
-                                              fontSize: 16.sp,
-                                              fontWeight: FontWeight.w500,
-                                              color: AppColor.secondaryBlack,
-                                            ),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.phone,
+                                                size: 22.sp,
+                                                color: colorScheme.primary,
+                                              ),
+                                              SizedBox(width: 10.w),
+                                              Text(
+                                                address.phone,
+                                                style: GoogleFonts.roboto(
+                                                  fontSize: 18.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color:
+                                                      AppColor.secondaryBlack,
+                                                ),
+                                              ),
+                                            ],
                                           ),
+                                          SizedBox(height: 6.h),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Icon(
+                                                Icons.location_on,
+                                                size: 22.sp,
+                                                color: colorScheme.primary,
+                                              ),
+                                              SizedBox(width: 10.w),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      '${address.houseNo}, ${address.street}',
+                                                      style: GoogleFonts.roboto(
+                                                        fontSize: 16.sp,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color:
+                                                            AppColor
+                                                                .secondaryBlack,
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 4.h),
+                                                    Text(
+                                                      '${address.city}, ${address.state} - ${address.pincode}',
+                                                      style: GoogleFonts.roboto(
+                                                        fontSize: 16.sp,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            AppColor
+                                                                .secondaryBlack,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
                                           SizedBox(height: 8.h),
                                           Row(
                                             mainAxisAlignment:
@@ -721,6 +871,8 @@ class _AddressBookViewState extends State<AddressBookView> {
                                                     ),
                                                     builder: (context) {
                                                       return EditAddressBottomSheet(
+                                                        name: address.name,
+                                                        mobile: address.phone,
                                                         id: address.id,
                                                         houseNo:
                                                             address.houseNo,
@@ -735,12 +887,24 @@ class _AddressBookViewState extends State<AddressBookView> {
                                                     },
                                                   );
                                                 },
-                                                child: Text(
-                                                  'Edit',
-                                                  style: GoogleFonts.roboto(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 15.sp,
-                                                  ),
+                                                child: Row(
+                                                  children: [
+                                                    FaIcon(
+                                                      FontAwesomeIcons
+                                                          .penToSquare,
+                                                      size: 18.sp,
+                                                      color: AppColor.black,
+                                                    ),
+                                                    SizedBox(width: 6.w),
+                                                    Text(
+                                                      'Edit',
+                                                      style: GoogleFonts.roboto(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: 15.sp,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                               SizedBox(width: 8.w),
@@ -771,73 +935,85 @@ class _AddressBookViewState extends State<AddressBookView> {
                                                     'Delete address: ${address.houseNo}',
                                                   );
                                                 },
-                                                child: Text(
-                                                  'Delete',
-                                                  style: GoogleFonts.roboto(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 15.sp,
-                                                  ),
+                                                child: Row(
+                                                  children: [
+                                                    FaIcon(
+                                                      FontAwesomeIcons.trashCan,
+                                                      size: 18.sp,
+                                                      color:
+                                                          AppColor.black,
+                                                    ),
+                                                    SizedBox(width: 6.w),
+                                                    Text(
+                                                      'Delete',
+                                                      style: GoogleFonts.roboto(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: 15.sp,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                              if (!address.isSelected) ...[
-                                                SizedBox(width: 8.w),
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        colorScheme.onPrimary,
-                                                    foregroundColor:
-                                                        AppColor.primaryBlack,
-                                                    shape: RoundedRectangleBorder(
-                                                      side: BorderSide(
-                                                        color:
-                                                            AppColor
-                                                                .dividergrey,
-                                                        width: 0.5,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            30,
-                                                          ).r,
-                                                    ),
-                                                  ),
-                                                  onPressed:
-                                                      addressProvider
-                                                              .isAddressUpdating
-                                                          ? null
-                                                          : () async {
-                                                            await addressProvider
-                                                                .updateDeFaultAddress(
-                                                                  address.id,
-                                                                );
-                                                          },
+                                              // if (!address.isSelected) ...[
+                                              //   SizedBox(width: 8.w),
+                                              //   ElevatedButton(
+                                              //     style: ElevatedButton.styleFrom(
+                                              //       backgroundColor:
+                                              //           colorScheme.onPrimary,
+                                              //       foregroundColor:
+                                              //           AppColor.primaryBlack,
+                                              //       shape: RoundedRectangleBorder(
+                                              //         side: BorderSide(
+                                              //           color:
+                                              //               AppColor
+                                              //                   .dividergrey,
+                                              //           width: 0.5,
+                                              //         ),
+                                              //         borderRadius:
+                                              //             BorderRadius.circular(
+                                              //               30,
+                                              //             ).r,
+                                              //       ),
+                                              //     ),
+                                              //     onPressed:
+                                              //         addressProvider
+                                              //                 .isAddressUpdating
+                                              //             ? null
+                                              //             : () async {
+                                              //               await addressProvider
+                                              //                   .updateDeFaultAddress(
+                                              //                     address.id,
+                                              //                   );
+                                              //             },
 
-                                                  child:
-                                                      addressProvider
-                                                              .isAddressUpdating
-                                                          ? SizedBox(
-                                                            height: 10.h,
-                                                            width: 10.w,
-                                                            child: CircularProgressIndicator(
-                                                              color:
-                                                                  colorScheme
-                                                                      .primary,
-                                                              strokeWidth:
-                                                                  2.0.w,
-                                                            ),
-                                                          )
-                                                          : Text(
-                                                            'Default',
-                                                            style:
-                                                                GoogleFonts.roboto(
-                                                                  fontSize:
-                                                                      15.sp,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                ),
-                                                          ),
-                                                ),
-                                              ],
+                                              //     child:
+                                              //         addressProvider
+                                              //                 .isAddressUpdating
+                                              //             ? SizedBox(
+                                              //               height: 10.h,
+                                              //               width: 10.w,
+                                              //               child: CircularProgressIndicator(
+                                              //                 color:
+                                              //                     colorScheme
+                                              //                         .primary,
+                                              //                 strokeWidth:
+                                              //                     2.0.w,
+                                              //               ),
+                                              //             )
+                                              //             : Text(
+                                              //               'Default',
+                                              //               style:
+                                              //                   GoogleFonts.roboto(
+                                              //                     fontSize:
+                                              //                         15.sp,
+                                              //                     fontWeight:
+                                              //                         FontWeight
+                                              //                             .w500,
+                                              //                   ),
+                                              //             ),
+                                              //   ),
+                                              // ],
                                             ],
                                           ),
                                         ],

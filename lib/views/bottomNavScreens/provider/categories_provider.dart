@@ -27,109 +27,103 @@ class CategoryProvider with ChangeNotifier {
   String get errorMessage => _errorMessage;
   int? get expandedIndex => _expandedIndex;
 
-  // Methods
   Future<void> fetchCategories() async {
-    print('🚀 Starting to fetch categories...');
+    print(' Starting to fetch categories...');
 
     _isLoading = true;
     _errorMessage = '';
     notifyListeners();
 
     try {
-      print('📡 Making API call...');
+      print(' Making API call...');
       final categoriesList = await _categoryRepository.getAllCategories();
 
-      print('✅ Categories fetched successfully!');
-      print('📊 Categories List Length: ${categoriesList.length}');
+      print(' Categories fetched successfully!');
+      print(' Categories List Length: ${categoriesList.length}');
 
       _categories = categoriesList;
 
-      // Print each category for debugging
       for (int i = 0; i < _categories.length; i++) {
-        print('📦 Category $i: ${_categories[i]}');
+        print(' Category $i: ${_categories[i]}');
       }
     } catch (e) {
       _errorMessage = 'Failed to load categories: $e';
-      print('❌ Error in fetchCategories: $e');
+      print(' Error in fetchCategories: $e');
 
-      // DO NOT show SnackBar here - just log and set error message
-      print('🚨 Setting error message: $_errorMessage');
+      print(' Setting error message: $_errorMessage');
     } finally {
       _isLoading = false;
       print(
-        '🏁 Finished fetching categories. Loading: $_isLoading, Error: $_errorMessage',
+        ' Finished fetching categories. Loading: $_isLoading, Error: $_errorMessage',
       );
       notifyListeners();
     }
   }
 
   Future<void> fetchCategoriesWithSubcategories() async {
-    print('🚀 Starting to fetch categories with subcategories...');
+    print(' Starting to fetch categories with subcategories...');
 
     _isLoadingSubcategories = true;
     _errorMessage = '';
     notifyListeners();
 
     try {
-      print('📡 Making API call for subcategories...');
+      print(' Making API call for subcategories...');
       final categoriesWithSubcategoriesList =
           await _categoryRepository.getCategoriesWithSubcategories();
 
-      print('✅ Categories with subcategories fetched successfully!');
+      print(' Categories with subcategories fetched successfully!');
       print(
-        '📊 Categories with Subcategories List Length: ${categoriesWithSubcategoriesList.length}',
+        ' Categories with Subcategories List Length: ${categoriesWithSubcategoriesList.length}',
       );
 
       _categoriesWithSubcategories = categoriesWithSubcategoriesList;
       for (int i = 0; i < _categoriesWithSubcategories.length; i++) {
         final category = _categoriesWithSubcategories[i];
         print(
-          '📦 Category $i: ${category.name} (${category.typeCategories.length} subcategories)',
+          ' Category $i: ${category.name} (${category.typeCategories.length} subcategories)',
         );
         for (int j = 0; j < category.typeCategories.length; j++) {
-          print('   📦 Subcategory $j: ${category.typeCategories[j].name}');
+          print(' Subcategory $j: ${category.typeCategories[j].name}');
         }
       }
     } catch (e) {
       _errorMessage = 'Failed to load categories with subcategories: $e';
-      print('❌ Error in fetchCategoriesWithSubcategories: $e');
-      print('🚨 Setting error message: $_errorMessage');
+      print(' Error in fetchCategoriesWithSubcategories: $e');
+      print(' Setting error message: $_errorMessage');
     } finally {
       _isLoadingSubcategories = false;
       print(
-        '🏁 Finished fetching categories with subcategories. Loading: $_isLoadingSubcategories, Error: $_errorMessage',
+        ' Finished fetching categories with subcategories. Loading: $_isLoadingSubcategories, Error: $_errorMessage',
       );
       notifyListeners();
     }
   }
 
   void setExpandedIndex(int? index) {
-    print('🔄 Setting expanded index: $index');
+    print(' Setting expanded index: $index');
     _expandedIndex = _expandedIndex == index ? null : index;
     notifyListeners();
   }
 
   void clearError() {
-    print('🧹 Clearing error message');
+    print(' Clearing error message');
     _errorMessage = '';
     notifyListeners();
   }
 
-  // Method to retry loading categories
   Future<void> retryFetchCategories() async {
-    print('🔄 Retrying to fetch categories...');
+    print(' Retrying to fetch categories...');
     clearError();
     await fetchCategories();
   }
 
-  // Method to retry loading categories with subcategories
   Future<void> retryFetchCategoriesWithSubcategories() async {
-    print('🔄 Retrying to fetch categories with subcategories...');
+    print(' Retrying to fetch categories with subcategories...');
     clearError();
     await fetchCategoriesWithSubcategories();
   }
 
-  // Helper method to get a category by ID
   CategoryModel? getCategoryById(String id) {
     try {
       return _categoriesWithSubcategories.firstWhere(
@@ -140,7 +134,6 @@ class CategoryProvider with ChangeNotifier {
     }
   }
 
-  // Helper method to get subcategories for a specific category
   List<SubcategoryModel> getSubcategoriesForCategory(String categoryId) {
     final category = getCategoryById(categoryId);
     return category?.typeCategories ?? [];

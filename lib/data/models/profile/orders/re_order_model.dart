@@ -5,6 +5,22 @@ ReOrderModel reOrderModelFromJson(String str) =>
 
 String reOrderModelToJson(ReOrderModel data) => json.encode(data.toJson());
 
+double parseDouble(dynamic value) {
+  if (value == null) return 0.0;
+  if (value is int) return value.toDouble();
+  if (value is double) return value;
+  if (value is String) return double.tryParse(value) ?? 0.0;
+  return 0.0;
+}
+
+int parseInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
+
 class ReOrderModel {
   int statusCode;
   bool success;
@@ -55,7 +71,7 @@ class Datum {
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
     subCategory: SubCategory.fromJson(json["subCategory"] ?? {}),
-    count: json["count"] ?? 0,
+    count: parseInt(json["count"]),
     orderedAt:
         json["orderedAt"] != null
             ? DateTime.tryParse(json["orderedAt"]) ?? DateTime.now()
@@ -84,14 +100,14 @@ class SubCategory {
   int carbohydrate;
   int fat;
   int protein;
-  int price;
+  double price;
   DateTime createdAt;
   DateTime updatedAt;
   int v;
   String img;
   bool bestSellers;
   int discount;
-  int discountPrice;
+  double discountPrice;
   List<Quantity> quantity;
 
   SubCategory({
@@ -124,14 +140,14 @@ class SubCategory {
     type: json["type"] != null ? List<String>.from(json["type"]) : [],
     quality: json["quality"] ?? "",
     description: json["description"] ?? "",
-    weight: json["weight"] ?? "",
-    pieces: json["pieces"] ?? "",
-    serves: json["serves"] ?? 0,
-    totalEnergy: json["totalEnergy"] ?? 0,
-    carbohydrate: json["carbohydrate"] ?? 0,
-    fat: json["fat"] ?? 0,
-    protein: json["protein"] ?? 0,
-    price: json["price"] ?? 0,
+    weight: json["weight"]?.toString() ?? "",
+    pieces: json["pieces"]?.toString() ?? "",
+    serves: parseInt(json["serves"]),
+    totalEnergy: parseInt(json["totalEnergy"]),
+    carbohydrate: parseInt(json["carbohydrate"]),
+    fat: parseInt(json["fat"]),
+    protein: parseInt(json["protein"]),
+    price: parseDouble(json["price"]),
     createdAt:
         json["createdAt"] != null
             ? DateTime.tryParse(json["createdAt"]) ?? DateTime.now()
@@ -140,11 +156,11 @@ class SubCategory {
         json["updatedAt"] != null
             ? DateTime.tryParse(json["updatedAt"]) ?? DateTime.now()
             : DateTime.now(),
-    v: json["__v"] ?? 0,
+    v: parseInt(json["__v"]),
     img: json["img"] ?? "",
     bestSellers: json["bestSellers"] ?? false,
-    discount: json["discount"] ?? 0,
-    discountPrice: json["discountPrice"] ?? 0,
+    discount: parseInt(json["discount"]),
+    discountPrice: parseDouble(json["discountPrice"]),
     quantity:
         json["quantity"] != null
             ? List<Quantity>.from(
@@ -184,8 +200,10 @@ class Quantity {
 
   Quantity({required this.managerId, required this.count});
 
-  factory Quantity.fromJson(Map<String, dynamic> json) =>
-      Quantity(managerId: json["managerId"] ?? "", count: json["count"] ?? 0);
+  factory Quantity.fromJson(Map<String, dynamic> json) => Quantity(
+    managerId: json["managerId"] ?? "",
+    count: parseInt(json["count"]),
+  );
 
   Map<String, dynamic> toJson() => {"managerId": managerId, "count": count};
 }

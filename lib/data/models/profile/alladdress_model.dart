@@ -1,3 +1,7 @@
+// To parse this JSON data, do
+//
+//     final allAddressModel = allAddressModelFromJson(jsonString);
+
 import 'dart:convert';
 
 AllAddressModel allAddressModelFromJson(String str) =>
@@ -45,6 +49,8 @@ class AllAddressModel {
 }
 
 class AddressData {
+  String name;
+  String phone;
   String houseNo;
   String street;
   String city;
@@ -53,10 +59,12 @@ class AddressData {
   String type;
   double latitude;
   double longitude;
-  String id;
   bool isSelected;
+  String id;
 
   AddressData({
+    required this.name,
+    required this.phone,
     required this.houseNo,
     required this.street,
     required this.city,
@@ -65,11 +73,13 @@ class AddressData {
     required this.type,
     required this.latitude,
     required this.longitude,
-    required this.id,
     required this.isSelected,
+    required this.id,
   });
 
   factory AddressData.fromJson(Map<String, dynamic> json) => AddressData(
+    name: json["name"] ?? "",
+    phone: json["phone"] ?? "",
     houseNo: json["houseNo"] ?? "",
     street: json["street"] ?? "",
     city: json["city"] ?? "",
@@ -78,11 +88,13 @@ class AddressData {
     type: json["type"] ?? "",
     latitude: (json["latitude"] ?? 0).toDouble(),
     longitude: (json["longitude"] ?? 0).toDouble(),
-    id: json["_id"] ?? "",
     isSelected: json["isSelected"] ?? false,
+    id: json["_id"] ?? "",
   );
 
   Map<String, dynamic> toJson() => {
+    "name": name,
+    "phone": phone,
     "houseNo": houseNo,
     "street": street,
     "city": city,
@@ -91,7 +103,7 @@ class AddressData {
     "type": type,
     "latitude": latitude,
     "longitude": longitude,
-    "_id": id,
     "isSelected": isSelected,
+    "_id": id,
   };
 }

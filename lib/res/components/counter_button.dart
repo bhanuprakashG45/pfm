@@ -1,3 +1,4 @@
+import 'package:priya_fresh_meats/res/components/login_bottomsheet.dart';
 import 'package:priya_fresh_meats/utils/exports.dart';
 
 class CounterButton extends StatefulWidget {
@@ -25,13 +26,26 @@ class _CounterButtonState extends State<CounterButton> {
   late ValueNotifier<bool> isCounterVisibleNotifier;
   late ValueNotifier<bool> isDeletingNotifier;
 
+  String? userId;
+
   @override
   void initState() {
     super.initState();
+    _loadUserId();
     int initialCount = widget.initialCount < 0 ? 0 : widget.initialCount;
     countNotifier = ValueNotifier<int>(initialCount);
     isCounterVisibleNotifier = ValueNotifier<bool>(initialCount > 0);
     isDeletingNotifier = ValueNotifier<bool>(false);
+  }
+
+  void _loadUserId() async {
+    final pref = SharedPref();
+    final id = await pref.getUserId();
+
+    setState(() {
+      userId = id.isNotEmpty ? id : null;
+      debugPrint('Loaded userId: $userId');
+    });
   }
 
   void _increment() {
@@ -118,7 +132,16 @@ class _CounterButtonState extends State<CounterButton> {
                 ),
                 SizedBox(width: 12.w),
                 GestureDetector(
-                  onTap: _increment,
+                  onTap: () {
+                    if (userId == null) {
+                      showLoginBottomSheet(
+                        context,
+                        message: "Please login to add items to cart.",
+                      );
+                      return;
+                    }
+                    _increment();
+                  },
                   child: Icon(Icons.add, size: 20.sp, color: iconColor),
                 ),
               ],

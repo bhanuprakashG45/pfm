@@ -1,3 +1,4 @@
+import 'package:priya_fresh_meats/res/components/login_bottomsheet.dart';
 import 'package:priya_fresh_meats/utils/exports.dart';
 
 class AddToCartButton extends StatefulWidget {
@@ -25,14 +26,27 @@ class _AddToCartButtonState extends State<AddToCartButton> {
   late ValueNotifier<bool> isCounterVisibleNotifier;
   late ValueNotifier<bool> isDeletingNotifier;
 
+  String? userId;
+
   @override
   void initState() {
     super.initState();
+    _loadUserId();
 
     int initialCount = widget.initialCount < 0 ? 0 : widget.initialCount;
     countNotifier = ValueNotifier<int>(initialCount);
     isCounterVisibleNotifier = ValueNotifier<bool>(initialCount > 0);
     isDeletingNotifier = ValueNotifier<bool>(false);
+  }
+
+  void _loadUserId() async {
+    final pref = SharedPref();
+    final id = await pref.getUserId();
+
+    setState(() {
+      userId = id.isNotEmpty ? id : null;
+      debugPrint('Loaded userId: $userId');
+    });
   }
 
   void _increment() async {
@@ -89,7 +103,7 @@ class _AddToCartButtonState extends State<AddToCartButton> {
               borderRadius: BorderRadius.circular(8).r,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha: 0.15),
                   blurRadius: 1,
                   spreadRadius: 1,
                 ),
@@ -117,7 +131,16 @@ class _AddToCartButtonState extends State<AddToCartButton> {
                 ),
                 SizedBox(width: 10.w),
                 InkWell(
-                  onTap: _increment,
+                  onTap: () {
+                    if (userId == null) {
+                      showLoginBottomSheet(
+                        context,
+                        message: "Please Login to Add Items to Cart",
+                      );
+                    } else {
+                      _increment();
+                    }
+                  },
                   child: Icon(Icons.add, size: 25.sp, color: iconColor),
                 ),
               ],
@@ -141,7 +164,7 @@ class _AddToCartButtonState extends State<AddToCartButton> {
                         borderRadius: BorderRadius.circular(5).r,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 1,
                             spreadRadius: 1,
                           ),

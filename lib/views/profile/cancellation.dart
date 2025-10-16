@@ -5,116 +5,191 @@ class CancellationPolicyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorscheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: CustomAppBar(title: 'Cancellation Policy'),
-      backgroundColor: colorscheme.onPrimary,
+      appBar: AppBar(
+        title: Text(
+          'Cancellation Policy',
+          style: GoogleFonts.roboto(
+            fontWeight: FontWeight.w600,
+            fontSize: 20.sp,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        surfaceTintColor: colorScheme.onPrimary,
+        shadowColor: colorScheme.onPrimary,
+        elevation: 0.01,
+      ),
+      backgroundColor: colorScheme.onPrimary,
       body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(10.0).r,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Cancellation & Reschedule Policy",
-                style: GoogleFonts.roboto(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18.sp,
-                  color: AppColor.secondaryBlack,
-                ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
+          child: SingleChildScrollView(
+            child: Container(
+              padding: EdgeInsets.all(10).r,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10).r,
+                border: Border.all(color: Color(0xFFDEDED1), width: 1.5.w),
+                color: colorScheme.onPrimary,
               ),
-              Text(
-                "Effective Date: \nApp Name: Priya Fresh Meats",
-                style: GoogleFonts.roboto(
-                  fontWeight: FontWeight.w500,
-                  fontStyle: FontStyle.italic,
-                  color: AppColor.secondaryBlack,
-                  fontSize: 16.sp,
-                ),
-              ),
-              SizedBox(height: 20.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20.h),
+                  _buildHeading(
+                    "Cancellation & Refund Policy – Priya Fresh Meats",
+                  ),
+                  _buildSubText("Updated on : October 14, 2025."),
+                  Divider(color: Color(0xFFDEDED1), thickness: 1),
 
-              _section(
-                "1. Order Cancellation by Customer",
-                "• Customers may cancel an order within 5 minutes of placing it at no extra cost.\n\n"
-                    "• Once an order is confirmed and processing begins, cancellation may not be possible.\n\n"
-                    "• If cancellation is permitted, a cancellation fee (up to [X%] of order value) may be charged.\n\n"
-                    "• Frequent cancellations of COD orders may result in suspension of the COD option.",
-              ),
+                  _buildSection("1. Order Cancellation by Customer", [
+                    "Customers may cancel their order within 5 minutes of placement at no cost.",
+                    "Once the order is processed, cancellation may not be possible.",
+                    "As of now, only online payment is accepted; Cash on Delivery (COD) is unavailable.",
+                    "If eligible, refunds will be processed within 1–7 working days.",
+                    "Frequent cancellations may result in temporary account restrictions.",
+                  ]),
+                  Divider(color: Color(0xFFDEDED1), thickness: 1),
 
-              _section(
-                "2. Order Rescheduling by Customer",
-                "• Rescheduling is subject to delivery personnel availability and product freshness.\n\n"
-                    "• Requests must be made at least 1 hour before the scheduled delivery.\n\n"
-                    "• Not available during peak hours or promotional sales.",
-              ),
+                  _buildSection("2. Order Rescheduling by Customer", [
+                    "Rescheduling is allowed only before the order is processed.",
+                    "Requests must be made at least 1 hour prior to the scheduled delivery time.",
+                    "Product availability and delivery slot may affect rescheduling options.",
+                  ]),
+                  Divider(color: Color(0xFFDEDED1), thickness: 1),
 
-              _section(
-                "3. Cancellation or Reschedule by Priya Fresh Meats",
-                "• Orders may be cancelled/rescheduled due to product unavailability, incorrect info, or unforeseen circumstances.\n\n"
-                    "• Customers will be notified and refunds (if applicable) processed within 5–7 business days.",
-              ),
+                  _buildSection(
+                    "3. Cancellation or Reschedule by Priya Fresh Meats",
+                    [
+                      "Orders may be cancelled or rescheduled due to product unavailability, incorrect order info, or operational reasons.",
+                      "Customers will be notified immediately via email/app notification.",
+                      "Refunds (if applicable) will be processed within 1–7 working days.",
+                    ],
+                  ),
+                  Divider(color: Color(0xFFDEDED1), thickness: 1),
 
-              _section(
-                "4. Refunds for Cancelled Orders",
-                "• Refunds only apply when:\n"
-                    "- Order cancelled by Priya Fresh Meats\n"
-                    "- Order cancelled by customer within allowed window\n\n"
-                    "• Refunds will be processed within 5–7 business days.",
-              ),
+                  _buildSection("4. Refund Conditions", [
+                    "Refunds are only processed for:",
+                    "- Orders cancelled by Priya Fresh Meats",
+                    "- Orders cancelled by customers within the allowed window",
+                    "Refunds are credited back to the original payment method.",
+                    "Bank processing times may affect the exact receipt of refund.",
+                  ]),
+                  Divider(color: Color(0xFFDEDED1), thickness: 1),
 
-              _section(
-                "5. Non-Cancellable Orders",
-                "• Special promotional deals\n"
-                    "• Bulk/wholesale orders\n"
-                    "• Orders already dispatched",
-              ),
+                  _buildSection("5. Non-Cancellable Orders", [
+                    "Orders already dispatched",
+                    "Bulk or wholesale orders",
+                    "Promotional or limited-time deals",
+                  ]),
+                  Divider(color: Color(0xFFDEDED1), thickness: 1),
 
-              _section(
-                "6. No-Show or Failed Delivery",
-                "• If the customer is unavailable at delivery time, the order will be marked as Failed Delivery.\n\n"
-                    "• No refund will be issued, and redelivery may be charged extra.",
-              ),
+                  _buildSection("6. Failed Delivery or No-Show", [
+                    "If the customer is unavailable at the delivery time, the order will be marked as Failed Delivery.",
+                    "No refund will be issued for failed delivery.",
+                    "Re-delivery may incur additional charges based on the situation.",
+                  ]),
+                  Divider(color: Color(0xFFDEDED1), thickness: 1),
 
-              _section(
-                "7. Contact for Cancellations & Reschedules",
-                "📧 Email: priya@gmail.com\n📞 Phone: +123232212",
-              ),
+                  _buildSection("7. Customer Support", [
+                    "📧 Email: priyafreshmeats@gmail.com",
+                    "📞 Phone: +91 9686068687 / +91 9845052666",
+                    "For cancellation or reschedule queries, reach out to our support team during business hours.",
+                  ]),
 
-              SizedBox(height: 20.h),
-            ],
+                  SizedBox(height: 20.h),
+                ],
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _section(String title, String content) {
+  Widget _buildHeading(String text) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Text(
+        text,
+        style: GoogleFonts.roboto(
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w600,
+          color: Colors.black,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubText(String text) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Text(
+        text,
+        style: GoogleFonts.roboto(
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFFA86523),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, List<String> items) {
     return Padding(
       padding: EdgeInsets.only(bottom: 20.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.roboto(
-              fontWeight: FontWeight.w600,
-              fontSize: 18.sp,
-              color: AppColor.black,
-            ),
-          ),
-          SizedBox(height: 5.h),
-          Text(
-            content,
-            style: GoogleFonts.roboto(
-              color: AppColor.secondaryBlack,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
+        children: [_buildSectionTitle(title), _buildBulletList(items)],
       ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: EdgeInsets.only(top: 10.h, bottom: 8.h),
+      child: Text(
+        title,
+        style: GoogleFonts.roboto(
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFFD32F2F),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBulletList(List<String> items) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children:
+          items
+              .map(
+                (item) => Padding(
+                  padding: EdgeInsets.symmetric(vertical: 2.h),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("• ", style: TextStyle(fontSize: 15.sp)),
+                      Expanded(
+                        child: Text(
+                          item,
+                          style: GoogleFonts.roboto(
+                            fontSize: 15.sp,
+                            color: Color(0xFF19183B),
+                            fontWeight: FontWeight.w500,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+              .toList(),
     );
   }
 }

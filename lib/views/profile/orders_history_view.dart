@@ -33,9 +33,9 @@ class _OrdersHistoryViewState extends State<OrdersHistoryView> {
             if (provider.isOrderHistoryLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-        
+
             final orders = provider.orderHistoryData;
-        
+
             if (orders.isEmpty) {
               return Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -83,17 +83,18 @@ class _OrdersHistoryViewState extends State<OrdersHistoryView> {
                 ),
               );
             }
-        
+
             return ListView.separated(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               itemCount: orders.length,
               separatorBuilder: (_, __) => SizedBox(height: 8.h),
               itemBuilder: (context, index) {
                 final order = orders[index];
-        
+
                 return Skeletonizer(
                   enabled:
-                      provider.isOrderDeleting || provider.isOrderHistoryLoading,
+                      provider.isOrderDeleting ||
+                      provider.isOrderHistoryLoading,
                   child: OrderCard(
                     order: order,
                     onReorder: () {
@@ -126,15 +127,15 @@ class OrderCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Consumer<OrderViewModel>(
-      builder: (context, orderprovider, child) {
+    return Consumer2<OrderViewModel, HomeViewmodel>(
+      builder: (context, orderprovider, homeprovider, child) {
         return Container(
           decoration: BoxDecoration(
             color: colorScheme.onPrimary,
             borderRadius: BorderRadius.circular(12).r,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
                 spreadRadius: 2,
                 offset: const Offset(0, 0),
@@ -360,6 +361,7 @@ class OrderCard extends StatelessWidget {
                                       context,
                                       order.orderId,
                                     );
+                                    await homeprovider.fetchCartCount();
                                   },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColor.greenGrad1,

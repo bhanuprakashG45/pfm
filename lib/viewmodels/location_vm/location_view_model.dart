@@ -41,10 +41,70 @@ class LocationProvider with ChangeNotifier {
   double? get latTemp => _latTemp;
   double? get longTemp => _longTemp;
 
+  String? _userName;
+  String? _userPhone;
+  String? _userFloor;
+  String? _userType;
+
+  String? get userName => _userName;
+  String? get userPhone => _userPhone;
+  String? get userFloor => _userFloor;
+  String? get userType => _userType;
+
+  set userType(String? value) {
+    _userType = value;
+    notifyListeners();
+  }
+
+  set userName(String? value) {
+    _userName = value;
+    notifyListeners();
+  }
+
+  set userPhone(String? value) {
+    _userPhone = value;
+    notifyListeners();
+  }
+
+  set userFloor(String? value) {
+    _userFloor = value;
+    notifyListeners();
+  }
+
   Future<void> loadSavedLocation() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _area = prefs.getString('user_area') ?? 'No area set';
     _fullAddress = prefs.getString('user_full_address') ?? 'No location set';
+    notifyListeners();
+  }
+
+  Future<void> storeUserDetails(String floor, String name, String phone) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_floor', floor);
+    await prefs.setString('user_name', name);
+    await prefs.setString('user_phone', phone);
+  }
+
+  Future<void> loadUserDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? floor = prefs.getString('user_floor');
+    String? name = prefs.getString('user_name');
+    String? phone = prefs.getString('user_phone');
+    _userFloor = floor;
+    _userName = name;
+    _userPhone = phone;
+    notifyListeners();
+    debugPrint('User Floor: $floor, Name: $name, Phone: $phone');
+  }
+
+  Future<void> clearUserDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('user_floor');
+    await prefs.remove('user_name');
+    await prefs.remove('user_phone');
+    _userFloor = null;
+    _userName = null;
+    _userPhone = null;
     notifyListeners();
   }
 

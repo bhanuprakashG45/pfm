@@ -146,6 +146,8 @@ class ProfileViewModel with ChangeNotifier {
   }
 
   Future<void> addNewAddress(
+    String name,
+    String phone,
     String houseNo,
     String streetName,
     String city,
@@ -158,6 +160,8 @@ class ProfileViewModel with ChangeNotifier {
     isNewAddressAdding = true;
     try {
       final response = await _repository.addNewAddress(
+        name,
+        phone,
         houseNo,
         streetName,
         city,
@@ -184,6 +188,8 @@ class ProfileViewModel with ChangeNotifier {
   Future<void> updateAddress(
     BuildContext context,
     String id,
+    String name,
+    String phone,
     String houseNo,
     String streetName,
     String city,
@@ -218,6 +224,8 @@ class ProfileViewModel with ChangeNotifier {
 
       final response = await _repository.updateAddress(
         id,
+        name,
+        phone,
         houseNo,
         streetName,
         city,

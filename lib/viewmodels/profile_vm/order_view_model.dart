@@ -185,6 +185,7 @@ class OrderViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint(e.toString());
+      Navigator.of(context).pop();
     } finally {
       isReOrdering = false;
     }
@@ -237,7 +238,7 @@ class OrderViewModel with ChangeNotifier {
       }
     } catch (e) {
       debugPrint(e.toString());
-    }finally{
+    } finally {
       isOrderCancelling = false;
     }
   }

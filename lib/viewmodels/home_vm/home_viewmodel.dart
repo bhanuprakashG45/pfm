@@ -17,6 +17,15 @@ class HomeViewmodel with ChangeNotifier {
     notifyListeners();
   }
 
+  List<String> _notifiedItemIds = [];
+  List<String> get notifiedItemIds => _notifiedItemIds;
+
+  // set addToNotifiedItem(String value) {
+  //   _notifiedItemIds.add(value);
+  //   debugPrint("Notified Item Ids: $value");
+  //   notifyListeners();
+  // }
+
   CartCount _count = CartCount(totalCount: 0, totalAmount: 0);
   CartCount get cartCount => _count;
 
@@ -33,7 +42,6 @@ class HomeViewmodel with ChangeNotifier {
     notifyListeners();
   }
 
-  
   bool _isNotifyMeLoading = false;
   bool get isNotifyMeLoading => _isNotifyMeLoading;
 
@@ -111,6 +119,12 @@ class HomeViewmodel with ChangeNotifier {
 
   Future<void> notifyMe(String itemId) async {
     isNotifyMeLoading = true;
+
+    _notifiedItemIds.add(itemId);
+
+    debugPrint("Notified Item Ids: $itemId");
+    notifyListeners();
+
     try {
       final response = await _repository.notifyMe(itemId);
       if (response.success) {

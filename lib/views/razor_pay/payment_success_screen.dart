@@ -20,7 +20,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
       String couponId = await _pref.getCouponId();
       int walletAmount = await _pref.getWalletAmount();
       final cartprovider = Provider.of<CartProvider>(context, listen: false);
-      await cartprovider.placeOrder(couponId, walletAmount);
+      await cartprovider.placeOrder(context, couponId, walletAmount);
       await cartprovider.fetchCartItems();
       await homescreenprovider.fetchBestSellers();
       await homescreenprovider.fetchCartCount();
