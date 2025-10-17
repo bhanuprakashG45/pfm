@@ -83,6 +83,11 @@ class LocationProvider with ChangeNotifier {
     await prefs.setString('user_floor', floor);
     await prefs.setString('user_name', name);
     await prefs.setString('user_phone', phone);
+    debugPrint("Floor : $floor, $name,$phone");
+    _userFloor = floor;
+    _userName = name;
+    _userPhone = phone;
+    notifyListeners();
   }
 
   Future<void> loadUserDetails() async {

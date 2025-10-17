@@ -147,9 +147,9 @@ class CartProvider with ChangeNotifier {
       listen: false,
     );
     final userType = locationprovider.userType ?? "self";
-    final userName = locationprovider.userName ?? "";
-    final userPhone = locationprovider.userPhone ?? "";
-    final userFloor = locationprovider.userFloor ?? "";
+    final userName = locationprovider.userName ?? "User1234";
+    final userPhone = locationprovider.userPhone ?? "1234567890";
+    final userFloor = locationprovider.userFloor ?? "1st floor";
 
     debugPrint("User Type: $userType");
     debugPrint("User Name: $userName");

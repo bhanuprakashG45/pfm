@@ -66,7 +66,7 @@ class _CartViewState extends State<CartView> {
 
     await locationprovider.storeUserDetails(
       _houseFloorController.text,
-      _houseFloorController.text,
+      _nameController.text,
       _mobileController.text,
     );
 
@@ -183,207 +183,204 @@ class _CartViewState extends State<CartView> {
               elevation: 0.1,
             ),
             backgroundColor: AppColor.offWhite,
-            bottomNavigationBar:
-                cartProvider.cartItemsData.isEmpty
-                    ? const SizedBox()
-                    : Container(
-                      padding: EdgeInsets.only(bottom: 8.r),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildBottomButton(
-                            context,
-                            theme,
-                            colorScheme,
-                            cartProvider,
-                          ),
-                        ],
+            bottomNavigationBar: cartProvider.cartItemsData.isEmpty
+                ? const SizedBox()
+                : Container(
+                    padding: EdgeInsets.only(bottom: 8.r),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildBottomButton(
+                          context,
+                          theme,
+                          colorScheme,
+                          cartProvider,
+                        ),
+                      ],
+                    ),
+                  ),
+            body: cartProvider.isCartFetching ||
+                    cartProvider.isAmountLoading ||
+                    cartProvider.isCouponsLoading
+                ? Container(
+                    color: Colors.transparent,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        backgroundColor: Colors.transparent,
+                        color: colorScheme.primary,
                       ),
                     ),
-
-            body:
-                cartProvider.isCartFetching ||
-                        cartProvider.isAmountLoading ||
-                        cartProvider.isCouponsLoading
-                    ? Container(
-                      color: Colors.transparent,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          backgroundColor: Colors.transparent,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                    )
-                    : cartProvider.cartItemsData.isEmpty
+                  )
+                : cartProvider.cartItemsData.isEmpty
                     ? Center(
-                      child: Image.asset(
-                        'assets/images/no_orders.png',
-                        width: size.width * 0.8,
-                        height: size.height * 0.4,
-                        fit: BoxFit.contain,
-                      ),
-                    )
+                        child: Image.asset(
+                          'assets/images/no_orders.png',
+                          width: size.width * 0.8,
+                          height: size.height * 0.4,
+                          fit: BoxFit.contain,
+                        ),
+                      )
                     : ListView.builder(
-                      padding: EdgeInsets.only(bottom: 10.h),
-                      itemCount: cartProvider.cartItemsData.length + 2,
-                      itemBuilder: (context, index) {
-                        if (index < cartProvider.cartItemsData.length) {
-                          final item = cartProvider.cartItemsData[index];
-                          return Container(
-                            color: colorScheme.onPrimary,
-                            padding: EdgeInsets.all(15.dg),
-                            child: Card(
-                              elevation: 0.3,
+                        padding: EdgeInsets.only(bottom: 10.h),
+                        itemCount: cartProvider.cartItemsData.length + 2,
+                        itemBuilder: (context, index) {
+                          if (index < cartProvider.cartItemsData.length) {
+                            final item = cartProvider.cartItemsData[index];
+                            return Container(
                               color: colorScheme.onPrimary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.r),
-                                side: BorderSide(
-                                  color: colorScheme.outlineVariant.withValues(
-                                    alpha: 0.4,
+                              padding: EdgeInsets.all(15.dg),
+                              child: Card(
+                                elevation: 0.3,
+                                color: colorScheme.onPrimary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20.r),
+                                  side: BorderSide(
+                                    color:
+                                        colorScheme.outlineVariant.withValues(
+                                      alpha: 0.4,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(13.dg),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      height: 90.h,
-                                      width: 90.w,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                          15.r,
+                                child: Padding(
+                                  padding: EdgeInsets.all(13.dg),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        height: 90.h,
+                                        width: 90.w,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            15.r,
+                                          ),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            15.r,
+                                          ),
+                                          child: CachedNetworkImage(
+                                            imageUrl: item.subCategory.img,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                Container(
+                                              color: Colors.grey.shade300,
+                                            ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    const Icon(Icons.error),
+                                          ),
                                         ),
                                       ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          15.r,
-                                        ),
-                                        child: CachedNetworkImage(
-                                          imageUrl: item.subCategory.img,
-                                          fit: BoxFit.cover,
-                                          placeholder:
-                                              (context, url) => Container(
-                                                color: Colors.grey.shade300,
-                                              ),
-                                          errorWidget:
-                                              (context, url, error) =>
-                                                  const Icon(Icons.error),
-                                        ),
-                                      ),
-                                    ),
-
-                                    SizedBox(width: 10.w),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item.subCategory.name,
-                                            style: GoogleFonts.roboto(
-                                              fontSize: 15.sp,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          Text(
-                                            item.subCategory.description,
-                                            style: GoogleFonts.roboto(
-                                              fontSize: 12.sp,
-                                              color: AppColor.secondaryBlack,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          Text(
-                                            item.subCategory.weight,
-                                            style: GoogleFonts.roboto(
-                                              fontSize: 13.sp,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: 10.w),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Row(
+                                      SizedBox(width: 10.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              '\u{20B9}${(item.subCategory.price * item.count).toStringAsFixed(2)}',
-                                              style: GoogleFonts.roboto(
-                                                fontSize: 14.sp,
-                                                decoration:
-                                                    TextDecoration.lineThrough,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-
-                                            SizedBox(width: 8.w),
-
-                                            Text(
-                                              '\u{20B9}${(item.subCategory.discountPrice * item.count).toStringAsFixed(2)}',
+                                              item.subCategory.name,
                                               style: GoogleFonts.roboto(
                                                 fontSize: 15.sp,
-                                                color: Colors.green,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            Text(
+                                              item.subCategory.description,
+                                              style: GoogleFonts.roboto(
+                                                fontSize: 12.sp,
+                                                color: AppColor.secondaryBlack,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            Text(
+                                              item.subCategory.weight,
+                                              style: GoogleFonts.roboto(
+                                                fontSize: 13.sp,
+                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                           ],
                                         ),
-                                        SizedBox(height: 5.h),
-
-                                        CounterButton(
-                                          itemId: item.subCategory.id,
-                                          initialCount: item.count,
-                                          onChanged: (count) async {
-                                            await homeprovider.fetchCartCount();
-                                            await cartProvider.fetchCartItems();
-                                            cartProvider.totalAmount;
-                                            await homeprovider
-                                                .fetchBestSellers();
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                      ),
+                                      SizedBox(width: 10.w),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                '\u{20B9}${(item.subCategory.price * item.count).toStringAsFixed(2)}',
+                                                style: GoogleFonts.roboto(
+                                                  fontSize: 14.sp,
+                                                  decoration: TextDecoration
+                                                      .lineThrough,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              SizedBox(width: 8.w),
+                                              Text(
+                                                '\u{20B9}${(item.subCategory.discountPrice * item.count).toStringAsFixed(2)}',
+                                                style: GoogleFonts.roboto(
+                                                  fontSize: 15.sp,
+                                                  color: Colors.green,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 5.h),
+                                          CounterButton(
+                                            itemId: item.subCategory.id,
+                                            initialCount: item.count,
+                                            onChanged: (count) async {
+                                              await homeprovider
+                                                  .fetchCartCount();
+                                              await cartProvider
+                                                  .fetchCartItems();
+                                              cartProvider.totalAmount;
+                                              await homeprovider
+                                                  .fetchBestSellers();
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        }
-                        if (index == cartProvider.cartItemsData.length) {
-                          return Column(
-                            children: [
-                              SizedBox(height: 20.h),
-                              _buildOffersSection(context, theme, colorScheme),
-                            ],
-                          );
-                        }
-                        if (index == cartProvider.cartItemsData.length + 1) {
-                          return Column(
-                            children: [
-                              SizedBox(height: 20.h),
-                              _buildBillSummary(
-                                theme,
-                                colorScheme,
-                                cartProvider,
-                              ),
+                            );
+                          }
+                          if (index == cartProvider.cartItemsData.length) {
+                            return Column(
+                              children: [
+                                SizedBox(height: 20.h),
+                                _buildOffersSection(
+                                    context, theme, colorScheme),
+                              ],
+                            );
+                          }
+                          if (index == cartProvider.cartItemsData.length + 1) {
+                            return Column(
+                              children: [
+                                SizedBox(height: 20.h),
+                                _buildBillSummary(
+                                  theme,
+                                  colorScheme,
+                                  cartProvider,
+                                ),
+                                SizedBox(height: 20.h),
+                                _buildDeliverySection(colorScheme),
+                              ],
+                            );
+                          }
 
-                              SizedBox(height: 20.h),
-                              _buildDeliverySection(colorScheme),
-                            ],
-                          );
-                        }
-
-                        return SizedBox.shrink();
-                      },
-                    ),
+                          return SizedBox.shrink();
+                        },
+                      ),
           ),
         );
       },
@@ -394,14 +391,12 @@ class _CartViewState extends State<CartView> {
     return Consumer2<LocationProvider, ProfileViewModel>(
       builder: (context, provider, profileprovider, _) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _nameController.text =
-              provider.userName != null
-                  ? provider.userName!
-                  : profileprovider.profiledata.name;
-          _mobileController.text =
-              provider.userPhone != null
-                  ? provider.userPhone!
-                  : profileprovider.profiledata.phone;
+          _nameController.text = provider.userName != null
+              ? provider.userName!
+              : profileprovider.profiledata.name;
+          _mobileController.text = provider.userPhone != null
+              ? provider.userPhone!
+              : profileprovider.profiledata.phone;
           _houseFloorController.text = provider.userFloor ?? '';
         });
 
@@ -426,7 +421,6 @@ class _CartViewState extends State<CartView> {
                 ],
               ),
               SizedBox(height: 15.h),
-
               Row(
                 children: [
                   Expanded(
@@ -475,7 +469,6 @@ class _CartViewState extends State<CartView> {
                   ),
                 ],
               ),
-
               SizedBox(height: 16.h),
               TextField(
                 controller: _nameController,
@@ -503,7 +496,6 @@ class _CartViewState extends State<CartView> {
                 ),
               ),
               SizedBox(height: 12.h),
-
               TextField(
                 controller: _mobileController,
                 onChanged: (value) {
@@ -558,9 +550,7 @@ class _CartViewState extends State<CartView> {
                   ),
                 ),
               ),
-
               SizedBox(height: 12.h),
-
               if (address.isNotEmpty)
                 Container(
                   padding: EdgeInsets.symmetric(
@@ -646,24 +636,23 @@ class _CartViewState extends State<CartView> {
             debugPrint(total.toString());
             openCheckout(total);
           },
-          child:
-              totalprovider.isAmountLoading
-                  ? SizedBox(
-                    height: 20.h,
-                    width: 20.w,
-                    child: CircularProgressIndicator(
-                      color: colorScheme.onPrimary,
-                      strokeWidth: 2.0.w,
-                    ),
-                  )
-                  : Text(
-                    "Click here to Pay",
-                    style: GoogleFonts.poppins(
-                      fontSize: 18.sp,
-                      color: colorScheme.onPrimary,
-                      fontWeight: FontWeight.w500,
-                    ),
+          child: totalprovider.isAmountLoading
+              ? SizedBox(
+                  height: 20.h,
+                  width: 20.w,
+                  child: CircularProgressIndicator(
+                    color: colorScheme.onPrimary,
+                    strokeWidth: 2.0.w,
                   ),
+                )
+              : Text(
+                  "Click here to Pay",
+                  style: GoogleFonts.poppins(
+                    fontSize: 18.sp,
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
         ),
       ),
     );
@@ -684,7 +673,6 @@ class _CartViewState extends State<CartView> {
             children: [
               _buildSectionHeader(),
               SizedBox(height: 20.h),
-
               _buildCouponCard(context, theme, colorScheme, cartprovider),
               SizedBox(height: 16.h),
               Column(
@@ -755,8 +743,8 @@ class _CartViewState extends State<CartView> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                (_) => CouponScreen(colorScheme: Theme.of(context).colorScheme),
+            builder: (_) =>
+                CouponScreen(colorScheme: Theme.of(context).colorScheme),
           ),
         ).then((selectedCoupon) {
           if (selectedCoupon != null) {
@@ -802,7 +790,6 @@ class _CartViewState extends State<CartView> {
                 ),
               ),
               SizedBox(width: 16.w),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -827,7 +814,6 @@ class _CartViewState extends State<CartView> {
                   ],
                 ),
               ),
-
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
@@ -892,7 +878,6 @@ class _CartViewState extends State<CartView> {
               ),
             ),
             SizedBox(width: 16.w),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -917,14 +902,12 @@ class _CartViewState extends State<CartView> {
                 ],
               ),
             ),
-
             Container(
               padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
-                color:
-                    (cartProvider.isSwitchOn ?? false)
-                        ? AppColor.greenGrad1.withValues(alpha: 0.1)
-                        : Colors.grey.withValues(alpha: 0.1),
+                color: (cartProvider.isSwitchOn ?? false)
+                    ? AppColor.greenGrad1.withValues(alpha: 0.1)
+                    : Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(25.r),
               ),
               child: Transform.scale(
@@ -1050,18 +1033,17 @@ class _CartViewState extends State<CartView> {
     if (appliedCode != null && appliedCode.isNotEmpty && !walletEnabled) {
       final coupon = cartProvider.couponData.availableCoupons.firstWhere(
         (c) => c.code.toLowerCase() == appliedCode.toLowerCase(),
-        orElse:
-            () => Coupon(
-              id: '',
-              name: '',
-              code: '',
-              discount: 0,
-              expiryDate: DateTime.now(),
-              limit: 0,
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-              v: 0,
-            ),
+        orElse: () => Coupon(
+          id: '',
+          name: '',
+          code: '',
+          discount: 0,
+          expiryDate: DateTime.now(),
+          limit: 0,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          v: 0,
+        ),
       );
 
       if (coupon.code.isNotEmpty) {
@@ -1078,10 +1060,9 @@ class _CartViewState extends State<CartView> {
     double totalBeforeWallet = itemTotal + deliveryFee + handlingFee - discount;
 
     if (walletEnabled) {
-      walletUsed =
-          walletBalance >= totalBeforeWallet
-              ? totalBeforeWallet
-              : walletBalance;
+      walletUsed = walletBalance >= totalBeforeWallet
+          ? totalBeforeWallet
+          : walletBalance;
     }
 
     final total = totalBeforeWallet - walletUsed;
