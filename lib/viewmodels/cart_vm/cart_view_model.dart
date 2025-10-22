@@ -216,7 +216,7 @@ class CartProvider with ChangeNotifier {
           (item.subCategory.discountPrice.toDouble() * item.count.toDouble()),
     );
 
-    const double deliveryFee = 39.0;
+    double deliveryFee = itemTotal > 500 ? 0.0 : 39.0;
     const double handlingFee = 5.0;
     double discount = 0.0;
     double walletDeduction = 0.0;
@@ -225,18 +225,17 @@ class CartProvider with ChangeNotifier {
     if (_appliedCoupon != null && _appliedCoupon!.isNotEmpty) {
       final coupon = _couponData.availableCoupons.firstWhere(
         (c) => c.code == _appliedCoupon,
-        orElse:
-            () => Coupon(
-              id: '',
-              name: '',
-              code: '',
-              discount: 0,
-              expiryDate: DateTime.now(),
-              limit: 0,
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-              v: 0,
-            ),
+        orElse: () => Coupon(
+          id: '',
+          name: '',
+          code: '',
+          discount: 0,
+          expiryDate: DateTime.now(),
+          limit: 0,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          v: 0,
+        ),
       );
 
       if (coupon.code.isNotEmpty) {

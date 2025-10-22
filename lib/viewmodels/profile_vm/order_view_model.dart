@@ -49,41 +49,28 @@ class OrderViewModel with ChangeNotifier {
   }
 
   TrackorderData _trackorderData = TrackorderData(
-    orderId: '',
-    status: '',
-    deliveryStatus: '',
-    stages: Stages(
-      pending: false,
-      accepted: false,
-      pickedUp: false,
-      inTransit: false,
-      delivered: false,
-      cancelled: false,
-      rejected: false,
-    ),
-    displayOrder: DisplayOrder(
-      geoLocation: TrackGeoLocation(type: '', coordinates: []),
-      id: '',
-      customer: '',
-      clientName: '',
-      location: '',
-      pincode: '',
-      orderDetails: [],
-      phone: '',
-      amount: 0,
+      orderId: '',
       status: '',
-      store: '',
-      manager: '',
-      notes: '',
-      isUrgent: false,
       deliveryStatus: '',
+      isCancelled: false,
+      isRejected: false,
+      stages: Stages(
+          pending: false,
+          accepted: false,
+          pickedUp: false,
+          inTransit: false,
+          delivered: false,
+          cancelled: false,
+          rejected: false),
+      customer: Customer(id: '', name: '', phone: ''),
+      store: TrackStore(id: '', name: ''),
+      manager: Manager(id: '', phone: ''),
+      items: [],
+      amount: 0,
       deliveryRejectionReason: '',
-      reason: '',
+      notes: '',
       createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-      v: 0,
-    ),
-  );
+      updatedAt: DateTime.now());
 
   TrackorderData get trackorderdata => _trackorderData;
 
@@ -197,6 +184,7 @@ class OrderViewModel with ChangeNotifier {
       final response = await _repository.fetchTrackOrder(itemId);
       if (response.success) {
         _trackorderData = response.data;
+        notifyListeners();
       } else {
         debugPrint(response.message);
       }

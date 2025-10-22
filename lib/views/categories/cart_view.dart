@@ -1018,7 +1018,7 @@ class _CartViewState extends State<CartView> {
       (sum, item) => sum + (item.subCategory.discountPrice * item.count),
     );
 
-    const double deliveryFee = 39.0;
+    double deliveryFee = itemTotal > 500 ? 0.0 : 39.0;
     const double handlingFee = 5.0;
     double discount = 0.0;
     double walletUsed = 0.0;

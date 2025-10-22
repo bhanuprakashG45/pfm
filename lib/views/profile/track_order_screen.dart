@@ -23,9 +23,9 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
 
   int _getCurrentStep(Stages stages) {
     if (stages.delivered) return 3;
-    if (stages.inTransit) return 2;
-    if (stages.pickedUp) return 1;
-    if (stages.accepted) return 0;
+    if (stages.pickedUp) return 2;
+    if (stages.accepted) return 1;
+    if (stages.pending) return 0;
     return 0;
   }
 
@@ -41,6 +41,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
         bottomNavigationBar: Consumer<OrderViewModel>(
           builder: (context, orderProvider, child) {
             final orderData = orderProvider.trackorderdata;
+            print("OrderData : ${orderData.orderId}");
             final currentStep = _getCurrentStep(orderData.stages);
 
             if (currentStep >= 1) {
@@ -69,27 +70,24 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                             vertical: 10.h,
                           ),
                         ),
-                        items:
-                            [
-                              "Ordered by mistake",
-                              "Address mismatched",
-                              "Delivery taking too long",
-                              "Other",
-                            ].map((reason) {
-                              return DropdownMenuItem(
-                                value: reason,
-                                child: Text(reason),
-                              );
-                            }).toList(),
+                        items: [
+                          "Ordered by mistake",
+                          "Address mismatched",
+                          "Delivery taking too long",
+                          "Other",
+                        ].map((reason) {
+                          return DropdownMenuItem(
+                            value: reason,
+                            child: Text(reason),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           setState(() {
                             selectedReason = value;
                           });
                         },
                       ),
-
                       SizedBox(height: 10.h),
-
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -100,52 +98,50 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                               borderRadius: BorderRadius.circular(12.r),
                             ),
                           ),
-                          onPressed:
-                              orderProvider.isOrderCancelling
-                                  ? null
-                                  : () async {
-                                    if (selectedReason == null) {
-                                      customErrorToast(
-                                        context,
-                                        "Please select a reason",
-                                      );
-                                      return;
-                                    }
-
-                                    await orderProvider.cancelOrder(
+                          onPressed: orderProvider.isOrderCancelling
+                              ? null
+                              : () async {
+                                  if (selectedReason == null) {
+                                    customErrorToast(
                                       context,
-                                      orderData.orderId,
-                                      selectedReason!,
+                                      "Please select a reason",
                                     );
-                                    await orderProvider.fetchActiveOrders();
+                                    return;
+                                  }
 
-                                    if (context.mounted) {
-                                      customErrorToast(
-                                        context,
-                                        "You have cancelled your order",
-                                      );
-                                      Navigator.pop(context);
-                                    }
-                                  },
-                          child:
-                              orderProvider.isOrderCancelling ||
-                                      orderProvider.isActiveOrderLoading
-                                  ? SizedBox(
-                                    height: 10.h,
-                                    width: 10.w,
-                                    child: CircularProgressIndicator(
-                                      color: colorScheme.onPrimary,
-                                      strokeWidth: 2.0.w,
-                                    ),
-                                  )
-                                  : Text(
-                                    "Cancel Order",
-                                    style: GoogleFonts.roboto(
-                                      color: colorScheme.onPrimary,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 18.sp,
-                                    ),
+                                  await orderProvider.cancelOrder(
+                                    context,
+                                    orderData.orderId,
+                                    selectedReason!,
+                                  );
+                                  await orderProvider.fetchActiveOrders();
+
+                                  if (context.mounted) {
+                                    customErrorToast(
+                                      context,
+                                      "You have cancelled your order",
+                                    );
+                                    Navigator.pop(context);
+                                  }
+                                },
+                          child: orderProvider.isOrderCancelling ||
+                                  orderProvider.isActiveOrderLoading
+                              ? SizedBox(
+                                  height: 10.h,
+                                  width: 10.w,
+                                  child: CircularProgressIndicator(
+                                    color: colorScheme.onPrimary,
+                                    strokeWidth: 2.0.w,
                                   ),
+                                )
+                              : Text(
+                                  "Cancel Order",
+                                  style: GoogleFonts.roboto(
+                                    color: colorScheme.onPrimary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18.sp,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
@@ -155,7 +151,6 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
             );
           },
         ),
-
         body: SafeArea(
           top: false,
           left: false,
@@ -171,9 +166,6 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
               if (orderData.orderId.isEmpty) {
                 return const Center(child: Text("No order found"));
               }
-
-              final displayOrder = orderData.displayOrder;
-
               return SingleChildScrollView(
                 child: Padding(
                   padding: EdgeInsets.symmetric(
@@ -227,9 +219,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                           ],
                         ),
                       ),
-
                       SizedBox(height: 10.h),
-
                       Container(
                         decoration: BoxDecoration(
                           color: colorScheme.onPrimary,
@@ -271,7 +261,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                                     vertical: 5.h,
                                   ),
                                   child: Text(
-                                    "\u{20B9}${displayOrder.amount}",
+                                    "\u{20B9}${orderData.amount}",
                                     style: GoogleFonts.roboto(
                                       fontSize: 15.sp,
                                       color: colorScheme.onPrimary,
@@ -284,7 +274,6 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                           ),
                         ),
                       ),
-
                       SizedBox(height: 10.h),
                       Container(
                         decoration: BoxDecoration(
@@ -316,7 +305,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                                 SizedBox(width: 10.w),
                                 Flexible(
                                   child: Text(
-                                    "${displayOrder.location}, ${displayOrder.pincode}",
+                                    "${orderData.store.name} \nContact: ${orderData.manager.phone}",
                                     overflow: TextOverflow.visible,
                                     maxLines: 3,
                                     style: GoogleFonts.roboto(
@@ -330,9 +319,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                           ),
                         ),
                       ),
-
                       SizedBox(height: 10.h),
-
                       Container(
                         decoration: BoxDecoration(
                           color: colorScheme.onPrimary,
@@ -362,76 +349,73 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children:
-                                    displayOrder.orderDetails.map((item) {
-                                      return Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 6.h,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.r),
-                                              child: CachedNetworkImage(
-                                                imageUrl: item.img,
-                                                scale: 1.0,
-                                                height: 40.h,
-                                                width: 40.w,
-                                                fit: BoxFit.cover,
-                                                placeholder:
-                                                    (context, url) => SizedBox(
-                                                      height: 40.h,
-                                                      width: 40.w,
-                                                      child: Center(
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                              strokeWidth: 2.w,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                errorWidget:
-                                                    (
-                                                      context,
-                                                      url,
-                                                      error,
-                                                    ) => Container(
-                                                      height: 40.h,
-                                                      width: 40.w,
-                                                      color:
-                                                          Colors.grey.shade200,
-                                                      child: Icon(
-                                                        Icons
-                                                            .image_not_supported,
-                                                        size: 20.sp,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                              ),
-                                            ),
-                                            SizedBox(width: 10.w),
-                                            Expanded(
-                                              child: Text(
-                                                " ${item.name} x ${item.quantity}",
-                                                style: GoogleFonts.roboto(
-                                                  fontSize: 16.sp,
-                                                  fontWeight: FontWeight.w500,
+                                children: orderData.items.map((item) {
+                                  return Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 6.h,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8.r),
+                                          child: CachedNetworkImage(
+                                            imageUrl: item.img,
+                                            scale: 1.0,
+                                            height: 40.h,
+                                            width: 40.w,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                SizedBox(
+                                              height: 40.h,
+                                              width: 40.w,
+                                              child: Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2.w,
                                                 ),
                                               ),
                                             ),
-                                            SizedBox(width: 8.w),
-                                            Text(
-                                              "\u{20B9}${item.price}",
-                                              style: GoogleFonts.roboto(
-                                                fontSize: 16.sp,
-                                                fontWeight: FontWeight.w500,
-                                                color: AppColor.greenGrad1,
+                                            errorWidget: (
+                                              context,
+                                              url,
+                                              error,
+                                            ) =>
+                                                Container(
+                                              height: 40.h,
+                                              width: 40.w,
+                                              color: Colors.grey.shade200,
+                                              child: Icon(
+                                                Icons.image_not_supported,
+                                                size: 20.sp,
+                                                color: Colors.grey,
                                               ),
                                             ),
-                                          ],
+                                          ),
                                         ),
-                                      );
-                                    }).toList(),
+                                        SizedBox(width: 10.w),
+                                        Expanded(
+                                          child: Text(
+                                            " ${item.name} x ${item.quantity}",
+                                            style: GoogleFonts.roboto(
+                                              fontSize: 16.sp,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 8.w),
+                                        Text(
+                                          "\u{20B9}${item.price}",
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColor.greenGrad1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
                               ),
                             ],
                           ),
